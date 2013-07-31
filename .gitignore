@@ -23,7 +23,7 @@ Thumbs.db
 *.ilk
 *.log
 *.tlog
-*.ncruchsolution
+*.ncrunchsolution
 [Bb]in
 [Dd]ebug*/
 *.lib
