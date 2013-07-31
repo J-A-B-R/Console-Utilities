@@ -33,7 +33,7 @@ int _tmain(int argc, _TCHAR* argv[])
         isConsole = FALSE;
     }
     
-    arg = SkipFirstCmdLineArg(GetCommandLine());
+    arg = SkipFirstCmdLineArg(GetCommandLine(), TRUE);
 
     for (i = 0, state = 0, k = *arg; k != 0; k = *(arg + ++i)) {
         switch (state)
