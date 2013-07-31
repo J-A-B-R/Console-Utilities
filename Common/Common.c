@@ -14,7 +14,7 @@ void Alert(TCHAR* message)
 #endif
 
 // Expects lpszCommandLine to be non null
-TCHAR* SkipFirstCmdArg(TCHAR* lpszCommandLine, BOOL nCorrectExtraWhiteSpace)
+TCHAR* SkipFirstCmdLineArg(TCHAR* lpszCommandLine, BOOL nCorrectExtraWhiteSpace)
 {
     TCHAR k = *lpszCommandLine;
     BOOL quoted = FALSE;

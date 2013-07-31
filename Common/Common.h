@@ -14,7 +14,7 @@ void Alert(TCHAR* message);
 #define ALERT(x)
 #endif
 
-TCHAR* SkipFirstCmdArg(TCHAR* lpszCommandLine);
+TCHAR* SkipFirstCmdLineArg(TCHAR* lpszCommandLine);
 
 TCHAR* GetString(UINT nMsgId, TCHAR* lpszDefaultMsg);
 
