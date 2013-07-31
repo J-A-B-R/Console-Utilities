@@ -50,7 +50,7 @@ int _tmain(int argc, _TCHAR* argv[])
             case 'c':
                 state = 10;
                 break;
-            case 'p':
+            case 'C':
                 state = 20;
                 break;
             case 'b':
@@ -77,6 +77,9 @@ int _tmain(int argc, _TCHAR* argv[])
                 _puttchar('@');
                 state = 0;
                 break;
+            case '#':
+                state = 0;
+                goto exit_loop;
             default:
                 APP_ERROR(IDS_UNKNOWN_OPTION);
                 break;
@@ -142,6 +145,7 @@ int _tmain(int argc, _TCHAR* argv[])
         }
     }
 
+exit_loop:
     if (isConsole && !SetAttributes(originalAttrs))
         SysError();
     if (state != 0)
