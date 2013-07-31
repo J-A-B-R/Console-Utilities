@@ -14,10 +14,6 @@ void Alert(TCHAR* message);
 #define ALERT(x)
 #endif
 
-void SetMarker(LPSTARTUPINFO lpInfo, LPBYTE lpBuffer);
-
-BOOL HasMarker(LPSTARTUPINFO lpInfo);
-
 TCHAR* SkipFirstCmdArg(TCHAR* lpszCommandLine);
 
 TCHAR* GetString(UINT nMsgId, TCHAR* lpszDefaultMsg);
