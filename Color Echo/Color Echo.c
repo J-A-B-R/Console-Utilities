@@ -19,26 +19,6 @@ int _tmain(int argc, _TCHAR* argv[])
     __int64 y;
     BOOL isConsole = TRUE;
 
-/*    SECURITY_ATTRIBUTES sa;
-    HANDLE stdOut;
-    COORD pos;
-    DWORD written;
-
-    pos.X = 0;
-    pos.Y = 0;
-
-    sa.nLength = sizeof(SECURITY_ATTRIBUTES);
-    sa.bInheritHandle = TRUE;
-    sa.lpSecurityDescriptor = NULL;
-
-    
-    stdOut = CreateFile(_T("CONOUT$"), GENERIC_READ|GENERIC_WRITE, FILE_SHARE_WRITE, &sa, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_NO_BUFFERING, NULL);
-    SetStdHandle(STD_OUTPUT_HANDLE, stdOut);
-
-//    SetConsoleCursorPosition(stdOut, pos);
-    WriteFile(stdOut, "La leche, joder", 15, &written, NULL);
-*/
-
     if (argc == 1) {
         _tprintf(_T("\n"));
         return EXIT_SUCCESS;
