@@ -4,8 +4,6 @@
 #define IDS_ERROR_FORMAT_STR 101
 #define TRY_HELP(x) if (!(x)) return _tprintf(_T("No Help"));
 
-#define RESERVED_MARKER 0x4A4142526A616272
-
 #ifdef _DEBUG
 void Alert(TCHAR* message)
 {
