@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
-#define APP_ERROR(id) { SetAttributes(originalAttrs); AppError(id); }
+// Restores the original colors before exiting with error
+#define APP_ERROR(id) { if (isConsole) SetAttributes(originalAttrs); AppError(id); }
 
 int _tmain(int argc, _TCHAR* argv[])
 {
@@ -32,7 +33,7 @@ int _tmain(int argc, _TCHAR* argv[])
         isConsole = FALSE;
     }
     
-    arg = SkipFirstCmdArg(GetCommandLine());
+    arg = SkipFirstCmdLineArg(GetCommandLine());
 
     for (i = 0, state = 0, k = *arg; k != 0; k = *(arg + ++i)) {
         switch (state)
