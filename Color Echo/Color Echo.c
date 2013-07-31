@@ -57,6 +57,10 @@ int _tmain(int argc, _TCHAR* argv[])
                 _puttchar('\b');
                 state = 0;
                 break;
+            case 'g':
+                _puttchar('\7');
+                state = 0;
+                break;
             case 'n':
                 _puttchar('\n');
                 state = 0;
