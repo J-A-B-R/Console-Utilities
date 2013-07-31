@@ -74,7 +74,7 @@ int _tmain(int argc, _TCHAR* argv[])
                 state = 0;
                 break;
             case '@':
-                _puttchar('/');
+                _puttchar('@');
                 state = 0;
                 break;
             default:
