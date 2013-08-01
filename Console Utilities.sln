@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Color Echo", "Color Echo\Color Echo.vcxproj", "{973E632A-6BA5-41E0-8CA4-A76DA8A7F857}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Enhanced Echo", "Enhanced Echo\Enhanced Echo.vcxproj", "{973E632A-6BA5-41E0-8CA4-A76DA8A7F857}"
 	ProjectSection(ProjectDependencies) = postProject
 		{069E309F-B3F4-4211-9BCB-21FA5C6B0CF2} = {069E309F-B3F4-4211-9BCB-21FA5C6B0CF2}
 	EndProjectSection
@@ -15,7 +15,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		LICENSE = LICENSE
 		README.md = README.md
-		RoadMap.txt = RoadMap.txt
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Common", "Common\Common.vcxproj", "{069E309F-B3F4-4211-9BCB-21FA5C6B0CF2}"

@@ -29,7 +29,7 @@
     <ClCompile Include="stdafx.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Color Echo.c">
+    <ClCompile Include="Enhanced Echo.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
