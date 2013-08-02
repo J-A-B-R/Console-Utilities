@@ -24,11 +24,13 @@ Thumbs.db
 *.log
 *.tlog
 *.ncrunchsolution
-[Bb]in
-[Dd]ebug*/
 *.lib
 *.sbr
-obj/
+[Bb]in/
+[Dd]ebug*/
+[Oo]bj/
+[Ll]ib/
+ipch/
 [Rr]elease*/
 _ReSharper*/
 [Tt]est[Rr]esult*
