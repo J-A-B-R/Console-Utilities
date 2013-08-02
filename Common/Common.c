@@ -124,6 +124,34 @@ BOOL IsElevated()
     return te.TokenIsElevated;
 }
 
+BOOL CreateChildProcess(HANDLE stdIn,
+                        HANDLE stdOut,
+                        HANDLE stdErr,
+                        TCHAR* szCmdLine,
+                        LPVOID lpEnvironment,
+                        LPTSTR lpCurrentDirectory,
+                        PROCESS_INFORMATION* piProcInfo)
+{ 
+    STARTUPINFO si;
+    BOOL result; 
+    TCHAR* cmdLine = (TCHAR*)malloc(sizeof(TCHAR) * (_tcslen(szCmdLine) + 2));
+
+    _tcscpy_s(cmdLine, _tcslen(szCmdLine) + 1, szCmdLine);
+
+    ZeroMemory(piProcInfo, sizeof(PROCESS_INFORMATION));
+    ZeroMemory(&si, sizeof(STARTUPINFO));
+
+    si.cb = sizeof(STARTUPINFO);
+    si.hStdError = stdErr;
+    si.hStdOutput = stdOut;
+    si.hStdInput = stdIn;
+    si.dwFlags = STARTF_USESTDHANDLES;
+
+    result = CreateProcess(NULL, cmdLine, NULL, NULL, TRUE, 0, lpEnvironment, lpCurrentDirectory, &si, piProcInfo);
+    free(cmdLine);
+    return result;
+}
+
 int ToWord(TCHAR* lpszWord, WORD* lpnWord, BOOL full, int radix)
 {
     TCHAR* ptr;

@@ -28,6 +28,15 @@ BOOL IsVistaOrAbove();
 
 BOOL IsElevated();
 
+// Create a child process that uses the specified standard handles.
+BOOL CreateChildProcess(HANDLE stdIn,
+                        HANDLE stdOut,
+                        HANDLE stdErr,
+                        TCHAR* szCmdLine,
+                        LPVOID lpEnvironment,
+                        LPTSTR lpCurrentDirectory,
+                        PROCESS_INFORMATION* piProcInfo);
+
 int ToWord(TCHAR* lpszWord, WORD* lpnWord, BOOL full, int radix);
 
 WORD MergeAttributes(TCHAR* lpszNewAttrs, WORD nCurrentAttrs);
