@@ -25,11 +25,12 @@ Commands included so far
 
 - **`EECHO`**: Displays a message enhanced with escaped characters with several functions.
 
+- **`ELEV`**: If the UAC is enabled, launchs a program elevated, but using the existing console, instead of spawning a new one.
+
+
 
 Commands on roadmap
 -------------------
-- **`ELEV`**: If the UAC is enabled, launchs a program elevated, but using the existing console, not spawning a new one.
-
 - **`COLORTABLE`**: Changes the console color palette with new colors.
 
 - **`NSCRB`**: Launchs a program in a new screen buffer on the same console and reverts to the previous screen buffer on exiting.
