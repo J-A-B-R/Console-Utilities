@@ -7,6 +7,17 @@ For detailed operation, check the in-command help with option `/?`.
 The help included on each command is in english and spanish. If the Windows locale is a spanish variant, it'll show the spanish help, otherwise it'll show the english help.
 
 
+Installation
+------------
+You can download or clone the project and compile it for yourself or you can download a precompiled bundle. Whatever the method you choose,
+put the executables in a directory included in the PATH environment variable.
+
+###Bundles:
+* [Console Utilities v1.0 32 bits](https://rapidshare.com/files/3116468238/Console-Utilities_x86_1.00.zip)
+
+* [Console Utilities v1.0 64 bits](https://rapidshare.com/files/145339343/Console-Utilities_x64_1.00.zip)
+
+
 Commands included so far
 ------------------------
 
@@ -28,9 +39,9 @@ Commands on roadmap
 
 Personal background
 -------------------
-I started this little project as a fun summer entertainment to detox of .NET, OO, lambdas, asyncs, SOLID and whatnot.
+I started this little project as a fun summer entertainment to detox of .NET, OO, lambdas, ORMs, repository patterns, async programming, SOLID concepts and whatnot.
 
-So here I am, back to basics facing the arid Win32 API that I've almost forgotten, armed only with the ancient but beloved C89.
+So here I am, back to basics facing the arid Win32 API that I've almost forgotten, armed only with the ancient but beloved C89 and willing to learn one thing or two.
 
 
 History
