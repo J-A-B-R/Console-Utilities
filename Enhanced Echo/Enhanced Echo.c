@@ -1,7 +1,8 @@
 #include "stdafx.h"
 
 // Restores the original colors before exiting with error
-#define APP_ERROR(id) { if (isConsole) SetAttributes(originalAttrs); AppError(id); }
+#define APP_ERROR(id) { if (isConsole) SetAttributes(originalAttrs); ExitAppError(id); }
+#define SYS_ERROR() { if (isConsole) SetAttributes(originalAttrs); ExitSysError(); }
 
 int _tmain(int argc, _TCHAR* argv[])
 {
@@ -29,7 +30,7 @@ int _tmain(int argc, _TCHAR* argv[])
         return PrintUsage();
 
     if ((originalAttrs = oldAttrs = GetAttributes()) == ATTRIBUTE_ERROR) {
-        SysError();
+        SYS_ERROR();
         isConsole = FALSE;
     }
     
@@ -102,7 +103,7 @@ int _tmain(int argc, _TCHAR* argv[])
                 APP_ERROR(IDS_WRONG_INDEX_FORMAT);
 
             if (isConsole && !SetAttributes(oldAttrs = tmp))
-                SysError();
+                SYS_ERROR();
 
             state = 0;
             break;
@@ -118,7 +119,7 @@ int _tmain(int argc, _TCHAR* argv[])
             i = (int)(ptr - arg);
             if (*ptr == ';') {
                 if (isConsole && !SetCursorPosition((SHORT)x, 0, xRel, TRUE))
-                    SysError();
+                    SYS_ERROR();
 
                 state = 0;
             } else if (*ptr == ',')
@@ -129,7 +130,7 @@ int _tmain(int argc, _TCHAR* argv[])
         case 21:
             if (k == ';') {
                 if (isConsole && !SetCursorPosition((SHORT)x, 0, xRel, TRUE))
-                    SysError();
+                    SYS_ERROR();
             } else {
                 yRel = k == '+' || k == '-';
                 y = _tcstoi64(arg + i, &ptr, 10);
@@ -138,7 +139,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
                 i = (int)(ptr - arg);
                 if (isConsole && !SetCursorPosition((SHORT)x, (SHORT)y, xRel, yRel))
-                    SysError();
+                    SYS_ERROR();
             }
             state = 0;
             break;
@@ -147,7 +148,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 exit_loop:
     if (isConsole && !SetAttributes(originalAttrs))
-        SysError();
+        SYS_ERROR();
     if (state != 0)
         AppError(IDS_WRONG_OPTION_ARG);
     return EXIT_SUCCESS;

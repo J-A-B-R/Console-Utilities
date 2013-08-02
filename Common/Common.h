@@ -22,7 +22,11 @@ int PrintUsage();
 
 void SysError();
 
+void ExitSysError();
+
 void AppError(UINT nMsgId);
+
+void ExitAppError(UINT nMsgId);
 
 BOOL IsVistaOrAbove();
 

@@ -87,12 +87,22 @@ void SysError() {
     MessageBox(NULL, errorMsg, _T("ERROR"), MB_OK);
 #endif
     _ftprintf(stderr, GetString(IDS_ERROR_FORMAT_STR, _T("\nERROR: %s\n")) , errorMsg);
+}
+
+void ExitSysError()
+{
+    SysError();
     exit(EXIT_FAILURE);
 }
 
 void AppError(UINT nMsgId)
 {
     _ftprintf(stderr, GetString(IDS_ERROR_FORMAT_STR, _T("\nERROR: %s\n")) , GetString(nMsgId, _T("???")));
+}
+
+void ExitAppError(UINT nMsgId)
+{
+    AppError(nMsgId);
     exit(EXIT_FAILURE);
 }
 

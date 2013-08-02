@@ -5,7 +5,7 @@ int PrintAttributes(int what)
     WORD attrs = GetAttributes();
 
     if (attrs == ATTRIBUTE_ERROR)
-        SysError();
+        ExitSysError();
 
     switch (what) {
     case 1:
@@ -33,7 +33,7 @@ int _tmain(int argc, TCHAR* argv[])
         return PrintAttributes(3);
 
     if (argc != 2)
-        AppError(IDS_WRONG_ARG_COUNT);
+        ExitAppError(IDS_WRONG_ARG_COUNT);
 
     arg = argv[1];
 
@@ -50,15 +50,15 @@ int _tmain(int argc, TCHAR* argv[])
         return PrintAttributes(1);
 
     if ((oldAttrs = GetAttributes()) == ATTRIBUTE_ERROR) {
-        SysError();
+        ExitSysError();
         isConsole = FALSE;
     }
 
     if ((newAttrs = MergeAttributes(arg, oldAttrs)) == ATTRIBUTE_ERROR)
-        AppError(IDS_WRONG_INDEX_FORMAT);
+        ExitAppError(IDS_WRONG_INDEX_FORMAT);
 
     if (isConsole && !SetAttributes(newAttrs))
-        SysError();
+        ExitSysError();
 
     return EXIT_SUCCESS;
 }
