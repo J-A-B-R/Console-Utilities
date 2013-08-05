@@ -29,6 +29,9 @@
     <ClCompile Include="Elevate Stub.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Ipc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="stdafx.c">
       <Filter>Source Files</Filter>
     </ClCompile>

@@ -5,7 +5,6 @@
 #include <Windows.h>
 
 #define ATTRIBUTE_ERROR 0xffff
-#define MARKER_BUFFER_LENGTH 12
 
 #ifdef _DEBUG
 void Alert(TCHAR* message);
@@ -13,6 +12,20 @@ void Alert(TCHAR* message);
 #else
 #define ALERT(x)
 #endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+LPVOID MemoryAlloc(size_t count, size_t size);
+
+BOOL MemoryFree(LPVOID lp);
+
+TCHAR* StringAlloc(size_t length);
+
+TCHAR* StringAllocAndCopy(TCHAR* lpzStr);
+
+BOOL StringFree(TCHAR* lpzStr);
 
 TCHAR* SkipFirstCmdLineArg(TCHAR* lpszCommandLine, BOOL nCorrectExtraWhiteSpace);
 
@@ -53,3 +66,7 @@ BOOL SetAttributes(WORD attr);
 
 // Redirect a standard stream to the console
 int RedirectStdToConsole(DWORD nStdHandle);
+
+#ifdef __cplusplus
+}
+#endif

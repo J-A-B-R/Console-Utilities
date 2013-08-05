@@ -1,13 +1,21 @@
 #include "stdafx.h"
+#include "Global.h"
+#include "Process.h"
 
-#ifdef _DEBUG
-#define STUB_NAME _T("_Elev.exe")
-#else
-#define STUB_NAME _T("Elev.exe")
-#endif
 
 int _tmain(int argc, TCHAR* argv[])
 {
-    ALERT("Arreando");
-    return EXIT_SUCCESS;
+    int result;
+
+    if (argc == 1 || (argc == 2 && _tcsicmp(*argv, _T("/?"))))
+        return PrintUsage();
+
+    // /s return without blocking, like start
+    // /n do not copy env vars
+
+    SetUp();
+    result = (!IsVistaOrAbove() || IsElevated()) ? ExecuteProgram() : ExecuteStub();
+    CleanUp();
+
+    return result;
 }

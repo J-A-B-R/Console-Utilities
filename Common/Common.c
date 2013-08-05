@@ -11,6 +11,50 @@ void Alert(TCHAR* message)
 }
 #endif
 
+LPVOID MemoryAlloc(size_t count, size_t size)
+{
+    LPVOID lp;
+    
+    lp = (TCHAR*)HeapAlloc(GetProcessHeap(), 0, count * size);
+
+    if (lp == NULL)
+        // HeapAlloc doesn't call SetLastError of his own
+        SetLastError(ERROR_OUTOFMEMORY);
+
+    return lp;
+}
+
+BOOL MemoryFree(LPVOID lp)
+{
+    return (lp != NULL) ? HeapFree(GetProcessHeap(), 0, lp) : TRUE;
+}
+
+TCHAR* StringAlloc(size_t length)
+{
+    return (TCHAR*)MemoryAlloc(length + 1, sizeof(TCHAR));
+}
+
+TCHAR* StringAllocAndCopy(TCHAR* lpzStr)
+{
+    size_t len;
+    TCHAR* str;
+    
+    if (lpzStr == NULL)
+        return NULL;
+
+    len = _tcslen(lpzStr);
+
+    if ((str = StringAlloc(len)) != NULL)
+        _tcscpy_s(str, len + 1, lpzStr);
+
+    return str;
+}
+
+BOOL StringFree(TCHAR* lpzStr)
+{
+    return MemoryFree(lpzStr);
+}
+
 // Expects lpszCommandLine to be non null
 TCHAR* SkipFirstCmdLineArg(TCHAR* lpszCommandLine, BOOL nCorrectExtraWhiteSpace)
 {

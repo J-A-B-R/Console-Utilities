@@ -7,7 +7,15 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 {
     UNREFERENCED_PARAMETER(hPrevInstance);
 
-    ALERT("Arreando");
+    // decode and validate name of the pipe
+    // open pipe
+    // get data
+    // attach to the parent console
+    // prepare process data
+    // create process suspended
+    // pass pid and wait ack
+    // close pipe
+    // resume process and terminate
 
     return EXIT_SUCCESS;
 }
