@@ -49,10 +49,11 @@ int _tmain(int argc, TCHAR* argv[])
     if (!_tcsicmp(arg, _T("/pg")))
         return PrintAttributes(1);
 
-    if ((oldAttrs = GetAttributes()) == ATTRIBUTE_ERROR) {
-        ExitSysError();
-        isConsole = FALSE;
-    }
+    if ((oldAttrs = GetAttributes()) == ATTRIBUTE_ERROR)
+        if (GetLastError() != ERROR_INVALID_HANDLE)
+            ExitSysError();
+        else
+            isConsole = FALSE;
 
     if ((newAttrs = MergeAttributes(arg, oldAttrs)) == ATTRIBUTE_ERROR)
         ExitAppError(IDS_WRONG_INDEX_FORMAT);

@@ -29,7 +29,22 @@
     <ClCompile Include="stdafx.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Console.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Memory.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Pipes.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Error.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Common.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Resources.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

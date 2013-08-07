@@ -3,30 +3,32 @@
 #include "Constants.h"
 
 
-#define SYS_ERROR() { SysError(); CleanUp(); exit(EXIT_FAILURE); }
-#define APP_ERROR(id) { AppError(id); CleanUp(); exit(EXIT_FAILURE); }
+#define SYS_ERROR() { SysError(); exit(CleanUp(EXIT_FAILURE)); }
+#define APP_ERROR(id) { AppError(id); exit(CleanUp(EXIT_FAILURE)); }
 
-BOOL bExiting;
+volatile BOOL gExiting;
 
-TCHAR* sWritableCmdLine;
-TCHAR* sCurrentDirectory;
+TCHAR* gCmdLine;
+TCHAR* gCurrentDirectory;
 
-HANDLE hIpcPipe;
-HANDLE hIpcThread;
-TCHAR sIpcPipeName[PIPE_NAME_STRZ_LENGTH];
+HANDLE gIpcPipe;
+TCHAR gIpcPipeName[PIPE_NAME_LENGTH + 1];
 
-HANDLE hStdInPipe;
-HANDLE hStdOutPipe;
-HANDLE hStdErrPipe;
-HANDLE hStdInThread;
-HANDLE hStdOutThread;
-HANDLE hStdErrThread;
-TCHAR sStdInPipeName[PIPE_NAME_STRZ_LENGTH];
-TCHAR sStdOutPipeName[PIPE_NAME_STRZ_LENGTH];
-TCHAR sStdErrPipeName[PIPE_NAME_STRZ_LENGTH];
+volatile HANDLE gStdInPipe;
+volatile HANDLE gStdOutPipe;
+volatile HANDLE gStdErrPipe;
 
-DWORD childProcessId;
+TCHAR gStdInPipeName[PIPE_NAME_LENGTH + 1];
+TCHAR gStdOutPipeName[PIPE_NAME_LENGTH + 1];
+TCHAR gStdErrPipeName[PIPE_NAME_LENGTH + 1];
+
+HANDLE gStdInThread;
+HANDLE gStdOutThread;
+HANDLE gStdErrThread;
+
+HANDLE gStubProcess;
+HANDLE gTargetProcess;
 
 
 void SetUp();
-void CleanUp();
+int CleanUp(int exitCode);

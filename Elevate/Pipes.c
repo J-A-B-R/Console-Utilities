@@ -1,6 +1,18 @@
-#include <stdafx.h>
+#include "stdafx.h"
 #include "Global.h"
 #include "Pipes.h"
+
+
+typedef enum {
+    Incoming,
+    Outgoing
+} redirectionPipe_t;
+
+typedef struct {
+    HANDLE Incoming;
+    HANDLE Outgoing;
+    redirectionPipe_t RedirectionPipe;
+} REDIRECTION_INFO;
 
 
 void CreateRandomName(TCHAR* lpName)
@@ -14,7 +26,7 @@ void CreateRandomName(TCHAR* lpName)
     if (UuidToString(&guid, &buffer) == RPC_S_OUT_OF_MEMORY)
         SYS_ERROR();
 
-    _tcscpy_s(lpName, RANDOM_NAME_STRZ_LENGTH, buffer);
+    _tcscpy_s(lpName, RANDOM_NAME_LENGTH + 1, buffer);
     RpcStringFree(&buffer);
 }
 
@@ -22,7 +34,7 @@ HANDLE CreateDedicatedPipe(TCHAR* lpPipeName, DWORD dwOpenMode, BOOL bPipeModeBy
 {
     HANDLE hPipe;
 
-    _tcscpy_s(PIPE_NAME_PREFIX, PIPE_NAME_PREFIX_LENGTH + 1, PIPE_NAME_PREFIX);
+    _tcscpy_s(lpPipeName, PIPE_NAME_PREFIX_LENGTH + 1, PIPE_NAME_PREFIX);
     CreateRandomName(lpPipeName + PIPE_NAME_PREFIX_LENGTH);
     
     if ((hPipe = CreateNamedPipe(
@@ -49,109 +61,69 @@ HANDLE CreateRedirectionPipe(TCHAR* lpPipeName, DWORD nStdHandle)
     return CreateDedicatedPipe(lpPipeName, (nStdHandle == STD_INPUT_HANDLE) ? PIPE_ACCESS_OUTBOUND : PIPE_ACCESS_INBOUND, TRUE);
 }
 
-BOOL SendDword(DWORD data)
+DWORD WINAPI HandleRedirectionPipe(LPVOID lpParam)
 {
-    DWORD written;
+    REDIRECTION_INFO* ri;
+    HANDLE incoming, outgoing, pipe;
+    DWORD read, written;
+    BYTE buffer[PIPE_BUFFER_SIZE];
+    DWORD error = ERROR_SUCCESS;
+    BOOL eof = FALSE;
 
-    if (!WriteFile(hIpcPipe, &data, sizeof(DWORD), &written, NULL))
-        return FALSE;
+    if (lpParam == NULL)
+        return ERROR_INVALID_PARAMETER;
+
+    ri = (REDIRECTION_INFO*) lpParam;
+    incoming = ri->Incoming;
+    outgoing = ri->Outgoing;
+    pipe = (ri->RedirectionPipe == Incoming) ? ri->Incoming : ri->Outgoing;
+    MemoryFree(ri);
+    SetLastError(ERROR_SUCCESS);
+    if (ConnectNamedPipe(pipe, NULL) || (error = GetLastError()) == ERROR_PIPE_CONNECTED) {
+        while (!gExiting && !eof) {
+            if (!ReadFile(incoming, buffer, PIPE_BUFFER_SIZE, &read, NULL))
+                break;
+            if (read < PIPE_BUFFER_SIZE)
+                eof = TRUE;
+            if (!WriteFile(outgoing, buffer, read, &written, NULL) || written != read)
+                break;
+            if (!FlushFileBuffers(outgoing))
+                break;
+        }
+        if (!DisconnectNamedPipe(pipe) && (error == ERROR_SUCCESS || error == ERROR_BROKEN_PIPE))
+            error = GetLastError();
+    }
+
+    return (error == ERROR_SUCCESS ||
+            error == ERROR_BROKEN_PIPE ||
+            error == ERROR_PIPE_CONNECTED ||
+            error == ERROR_PIPE_NOT_CONNECTED ||
+            error == ERROR_INVALID_HANDLE)  // CleanUp is kicking us out
+        ? ERROR_SUCCESS
+        : error;
 }
 
-BOOL SendData(LPVOID lpData, DWORD dataSize)
-{
-    DWORD written;
-
-    if (!SendDword(dataSize))
-        return FALSE;
-    if (!WriteFile(hIpcPipe, lpData, dataSize, &written, NULL))
-        return FALSE;
-    return TRUE;
-}
-
-BOOL SendString(TCHAR* pipeName)
-{
-    DWORD written;
-
-    return SendData(pipeName, (_tcslen(pipeName) + 1) * sizeof(TCHAR));
-}
-
-BOOL ReceiveDword(LPDWORD lpData)
-{
-    DWORD read;
-
-    if (!ReadFile(hIpcPipe, lpData, sizeof(DWORD), &read, NULL))
-        return FALSE;
-}
-
-BOOL ReceiveData(LPVOID* lppData, LPDWORD dataSize)
-{
-    DWORD read;
-
-    if (!ReceiveDword(dataSize))
-        return FALSE;
-    *lppData = MemoryAlloc(*dataSize, 1);
-    if (!ReadFile(hIpcPipe, *lppData, *dataSize, &read, NULL))
-        return FALSE;
-}
-
-struct REDIRECTION_INFO {
-    HANDLE Pipe;
-    HANDLE Std;
-};
-
-HANDLE StartHandlingRedirectionPipe(HANDLE hPipe, DWORD nStdHandle)
+HANDLE StartHandlingRedirectionPipe(HANDLE pipe, DWORD nStdHandle)
 {
     DWORD threadId;
     HANDLE hThread;
-    LPTHREAD_START_ROUTINE tsr = (nStdHandle == STD_INPUT_HANDLE) ? HandleInRedirectionPipe : HandleOutRedirectionPipe;
-    REDIRECTION_INFO* ri = (REDIRECTION_INFO*)malloc(sizeof(REDIRECTION_INFO));
+    REDIRECTION_INFO* ri = (REDIRECTION_INFO*)MemoryAlloc(1, sizeof(REDIRECTION_INFO));
 
-    ri->Pipe = hPipe;
-    ri->Std = GetStdHandle(STD_INPUT_HANDLE);
-
-    hThread = CreateThread(NULL, 0, tsr, ri, 0, &threadId);
-
-    if (hThread == NULL)
+    if (ri == NULL)
         SYS_ERROR();
-}
 
-BOOL GetRedirectionHandles(LPVOID lpParam, LPHANDLE pipe, LPHANDLE std)
-{
-    REDIRECTION_INFO* ri;
-
-    if (lpParam)
-        return FALSE;
-
-    ri = (REDIRECTION_INFO*) lpParam;
-    *pipe = ri->Pipe;
-    *std = ri->Std;
-    free(ri);
-}
-
-DWORD WINAPI HandleInRedirectionPipe(LPVOID lpParam)
-{
-    HANDLE pipe;
-    HANDLE std;
-
-    if (!GetRedirectionHandles(lpParam, &pipe, &std))
-        APP_ERROR(0);
-
-    ConnectNamedPipe(pipe, NULL);
-
-    for (;;) {
-        // TODO: Implement Read/Write loop
+    if (nStdHandle == STD_INPUT_HANDLE) {
+        ri->Incoming = GetStdHandle(nStdHandle);
+        ri->Outgoing = pipe;
+        ri->RedirectionPipe = Outgoing;
+    } else {
+        ri->Incoming = pipe;
+        ri->Outgoing = GetStdHandle(nStdHandle);
+        ri->RedirectionPipe = Incoming;
     }
-}
 
-DWORD WINAPI HandleOutRedirectionPipe(LPVOID lpParam)
-{
-    HANDLE pipe;
-    HANDLE std;
+    if ((hThread = CreateThread(NULL, 0, HandleRedirectionPipe, ri, 0, &threadId)) == NULL)
+        SYS_ERROR();
 
-    if (!GetRedirectionHandles(lpParam, &pipe, &std))
-        APP_ERROR(0);
-
-    for (;;) {
-        // TODO: Implement Read/Write loop
-    }
+    return hThread;
 }

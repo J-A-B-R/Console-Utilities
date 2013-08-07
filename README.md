@@ -27,6 +27,7 @@ Commands included so far
 
 - **`ELEV`**: If the UAC is enabled, launchs a program elevated, but using the existing console, instead of spawning a new one.
 
+	Inpired by [The Code Project](http://www.codeproject.com/) article [Vista UAC: The Definitive Guide](http://www.codeproject.com/Articles/19165/Vista-UAC-The-Definitive-Guide).
 
 
 Commands on roadmap

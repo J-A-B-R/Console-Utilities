@@ -2,7 +2,7 @@
 
 // Restores the original colors before exiting with error
 #define APP_ERROR(id) { if (isConsole) SetAttributes(originalAttrs); ExitAppError(id); }
-#define SYS_ERROR() { if (isConsole) SetAttributes(originalAttrs); ExitSysError(); }
+#define SYS_ERROR() { if (isConsole) { SetAttributes(originalAttrs); ExitSysError(); } }
 
 int _tmain(int argc, _TCHAR* argv[])
 {

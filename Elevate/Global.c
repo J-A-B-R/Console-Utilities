@@ -1,72 +1,104 @@
-#include <stdafx.h>
+#include "stdafx.h"
 #include "Global.h"
+
 
 void SetUp()
 {
-    bExiting = FALSE;
+    TCHAR* cmdLine;
+    DWORD len;
 
-    DWORD len = GetCurrentDirectory(0, NULL);
-    
-    sCurrentDirectory = StringAlloc(len);
-    GetCurrentDirectory(len + 1, sCurrentDirectory);
+    // Get the relevant part of the command line and copy it to
+    // writable memory as required by CreateProcess
+    cmdLine = SkipFirstCmdLineArg(GetCommandLine(), TRUE);
+    if ((gCmdLine = StringAllocAndCopy(cmdLine)) == NULL)
+        SYS_ERROR();
 
-    sWritableCmdLine = NULL;
-    hIpcPipe = INVALID_HANDLE_VALUE;
-    hStdInPipe = INVALID_HANDLE_VALUE;
-    hStdOutPipe = INVALID_HANDLE_VALUE;
-    hStdErrPipe = INVALID_HANDLE_VALUE;
+    gExiting = FALSE;
 
-    hIpcThread = NULL;
-    hStdInThread = NULL;
-    hStdOutThread = NULL;
-    hStdErrThread = NULL;
+    len = GetCurrentDirectory(0, NULL);
+    gCurrentDirectory = StringAlloc(len);
+    GetCurrentDirectory(len + 1, gCurrentDirectory);
 
-    childProcessId = 0;
+    gIpcPipe = INVALID_HANDLE_VALUE;
+    gStdInPipe = INVALID_HANDLE_VALUE;
+    gStdOutPipe = INVALID_HANDLE_VALUE;
+    gStdErrPipe = INVALID_HANDLE_VALUE;
 }
 
-void ClosePipeSafe(LPHANDLE lpHandle)
+void CloseServerPipeSafe(HANDLE handle)
 {
-    if (lpHandle != NULL && *lpHandle != INVALID_HANDLE_VALUE) {
-        DisconnectNamedPipe(*lpHandle);
-        CloseHandle(*lpHandle);
-        *lpHandle = INVALID_HANDLE_VALUE;
+    if (handle != INVALID_HANDLE_VALUE) {
+        DisconnectNamedPipe(handle);
+        CloseHandle(handle);
     }
 }
 
-void CloseThreadSafe(LPHANDLE lpHandle)
+void CloseThreadOrProcessSafe(HANDLE handle)
 {
-    if (lpHandle != NULL && *lpHandle != NULL) {
-        CloseHandle(*lpHandle);
-        *lpHandle = INVALID_HANDLE_VALUE;
-    }
+    if (handle != NULL)
+        CloseHandle(handle);
 }
 
-
-void FreeStringSafe(TCHAR** str)
+int CleanUp(int exitCode)
 {
-    if (str != NULL && *str != NULL) {
-        StringFree(*str);
-        *str = NULL;
+    HANDLE threads[3];
+    DWORD threadCount = 0;
+    DWORD threadExitCode;
+    DWORD processExitCode;
+    BOOL error = FALSE;
+    UINT i;
+
+    // Signal termination to the pipe redirection threads
+    gExiting = TRUE;
+
+
+    // Disconnect and close all existing pipes
+    CloseServerPipeSafe(gIpcPipe);
+    CloseServerPipeSafe(gStdInPipe);
+    CloseServerPipeSafe(gStdOutPipe);
+    CloseServerPipeSafe(gStdErrPipe);
+
+    // Wait the termination of all pipe redirection threads and check the termination cause
+    if (gStdInThread != NULL)
+        threads[threadCount++] = gStdInThread;
+    if (gStdOutThread != NULL)
+        threads[threadCount++] = gStdOutThread;
+    if (gStdErrThread != NULL)
+        threads[threadCount++] = gStdErrThread;
+    if (threadCount > 0) {
+        WaitForMultipleObjects(threadCount, threads, TRUE, MAX_WAITING_TIME);
+        for (i = 0; i < threadCount; i++) {
+            if (GetExitCodeThread(threads[i], &threadExitCode) && threadExitCode != ERROR_SUCCESS) {
+                SetLastError(threadExitCode);
+                SysError();
+                error = TRUE;
+            }
+        }
     }
-}
 
-void CleanUp()
-{
-    bExiting = TRUE;
+    // Pass-through the stub process termination error
+    if (gStubProcess != NULL && 
+        WaitForSingleObject(gStubProcess, MAX_WAITING_TIME) != WAIT_FAILED && 
+        GetExitCodeProcess(gStubProcess, &processExitCode) && 
+        processExitCode != ERROR_SUCCESS) {
+            SetLastError(processExitCode);
+            SysError();
+            error = TRUE;
+    }
 
-    ClosePipeSafe(&hIpcPipe);
-    ClosePipeSafe(&hStdInPipe);
-    ClosePipeSafe(&hStdOutPipe);
-    ClosePipeSafe(&hStdErrPipe);
+    if (error && exitCode == EXIT_SUCCESS)
+        exitCode = EXIT_FAILURE;
 
-    WaitForMultipleObjects();
+    // Close the handles to pipe redirection threads and the target process
+    CloseThreadOrProcessSafe(gStdInThread);
+    CloseThreadOrProcessSafe(gStdOutThread);
+    CloseThreadOrProcessSafe(gStdErrThread);
+    CloseThreadOrProcessSafe(gStubProcess);
+    CloseThreadOrProcessSafe(gTargetProcess);
 
-    CloseThreadSafe(&hIpcThread);
-    CloseThreadSafe(&hStdInThread);
-    CloseThreadSafe(&hStdOutThread);
-    CloseThreadSafe(&hStdErrThread);
+    // Free allocated memory for strings
+    StringFree(gCurrentDirectory);
+    StringFree(gCmdLine);
 
-    FreeStringSafe(&sCurrentDirectory);
-    FreeStringSafe(&sWritableCmdLine);
-
+    return exitCode;
 }
