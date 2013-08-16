@@ -51,7 +51,6 @@ int CleanUp(int exitCode)
     // Signal termination to the pipe redirection threads
     gExiting = TRUE;
 
-
     // Disconnect and close all existing pipes
     CloseServerPipeSafe(gIpcPipe);
     CloseServerPipeSafe(gStdInPipe);
@@ -65,16 +64,31 @@ int CleanUp(int exitCode)
         threads[threadCount++] = gStdOutThread;
     if (gStdErrThread != NULL)
         threads[threadCount++] = gStdErrThread;
-    if (threadCount > 0) {
-        WaitForMultipleObjects(threadCount, threads, TRUE, MAX_WAITING_TIME);
-        for (i = 0; i < threadCount; i++) {
-            if (GetExitCodeThread(threads[i], &threadExitCode) && threadExitCode != ERROR_SUCCESS) {
-                SetLastError(threadExitCode);
-                SysError();
-                error = TRUE;
+    if (threadCount > 0)
+        switch (WaitForMultipleObjects(threadCount, threads, TRUE, MAX_WAITING_TIME))
+        {
+        case WAIT_OBJECT_0:
+        case WAIT_ABANDONED_0:
+            for (i = 0; i < threadCount; i++) {
+                if (GetExitCodeThread(threads[i], &threadExitCode) && threadExitCode != ERROR_SUCCESS) {
+                    if (threadExitCode == ERROR_NO_DATA)
+                        AppError(IDS_PIPE_CLOSED);
+                    else {
+                        SetLastError(threadExitCode);
+                        SysError();
+                    }
+                    error = TRUE;
+                }
             }
-        }
-    }
+            break;
+        case WAIT_FAILED:
+            SysError();
+            error = TRUE;
+            break;
+        case WAIT_TIMEOUT:
+            // NADA
+            break;
+        };
 
     // Pass-through the stub process termination error
     if (gStubProcess != NULL && 

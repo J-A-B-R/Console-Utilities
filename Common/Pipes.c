@@ -26,7 +26,7 @@ BOOL SendData(HANDLE hPipe, LPVOID lpData, DWORD dataSize)
 
 BOOL SendString(HANDLE hPipe, TCHAR* str)
 {
-    BOOL result = SendData(hPipe, str, (_tcslen(str) + 1) * sizeof(TCHAR));
+    BOOL result = SendData(hPipe, str, (DWORD)(_tcslen(str) + 1) * sizeof(TCHAR));
     return result;
 }
 
@@ -47,7 +47,7 @@ BOOL ReceiveData(HANDLE hPipe, LPVOID* lppData, LPDWORD dataSize)
     if (!ReceiveDword(hPipe, &size))
         return FALSE;
 
-    lpData = MemoryAlloc(size, 1);
+    lpData = MemoryAlloc(size, 1, FALSE);
     
     if (lpData == NULL)
         return FALSE;

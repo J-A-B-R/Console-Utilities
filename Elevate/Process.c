@@ -25,9 +25,9 @@ int ExecuteProgram()
     return result;
 }
 
-void StartIpcCommunication()
+void SetIpcPipe()
 {
-    if (!ConnectNamedPipe(gIpcPipe, NULL) && GetLastError() != ERROR_PIPE_CONNECTED)
+    if ((gIpcPipe = CreateIpcPipe(gIpcPipeName)) == INVALID_HANDLE_VALUE)
         SYS_ERROR();
 }
 
@@ -69,6 +69,24 @@ void LaunchStub()
     gStubProcess = info.hProcess;
 }
 
+void StartIpcCommunication()
+{
+    if (!ConnectNamedPipe(gIpcPipe, NULL) && GetLastError() != ERROR_PIPE_CONNECTED)
+        SYS_ERROR();
+}
+
+void StartRedirectionCommunication()
+{
+    if (gStdInPipe != INVALID_HANDLE_VALUE)
+        gStdInThread = StartHandlingRedirectionPipe(gStdInPipe, STD_INPUT_HANDLE);
+
+    if (gStdOutPipe != INVALID_HANDLE_VALUE)
+        gStdOutThread = StartHandlingRedirectionPipe(gStdOutPipe, STD_OUTPUT_HANDLE);
+
+    if (gStdErrPipe != INVALID_HANDLE_VALUE)
+        gStdErrThread = StartHandlingRedirectionPipe(gStdErrPipe, STD_ERROR_HANDLE);
+}
+
 #define IPC_SYS_ERROR() { if (GetLastError() != ERROR_BROKEN_PIPE) SysError(); exit(CleanUp(EXIT_FAILURE)); }
 
 void PerformIpcCommunication()
@@ -78,8 +96,9 @@ void PerformIpcCommunication()
     DWORD targetProcessId;
     int i;
 
-    // communicate current directory, standard handles names and command line
-    if (!SendString(gIpcPipe, gCurrentDirectory) ||
+    // communicate process id, current directory, standard handles names and command line
+    if (!SendDword(gIpcPipe, GetCurrentProcessId()) ||
+        !SendString(gIpcPipe, gCurrentDirectory) ||
         !SendString(gIpcPipe, gStdInPipeName) ||
         !SendString(gIpcPipe, gStdOutPipeName) ||
         !SendString(gIpcPipe, gStdErrPipeName) ||
@@ -109,27 +128,17 @@ void PerformIpcCommunication()
     if ((gTargetProcess = OpenProcess(SYNCHRONIZE | PROCESS_QUERY_LIMITED_INFORMATION, FALSE, targetProcessId)) == NULL)
         IPC_SYS_ERROR();
 
-    // Reply with the target process id
+    // Reply with the received target process id to let the stub to resume
+    // the target process
     if (!SendDword(gIpcPipe, targetProcessId))
         IPC_SYS_ERROR();
 
     if (!FlushFileBuffers(gIpcPipe))
         IPC_SYS_ERROR();
 
+    // Finish communication with stub
     if (!DisconnectNamedPipe(gIpcPipe))
         IPC_SYS_ERROR();
-}
-
-void StartRedirectionCommunication()
-{
-    if (gStdInPipe != INVALID_HANDLE_VALUE)
-        gStdInThread = StartHandlingRedirectionPipe(gStdInPipe, STD_INPUT_HANDLE);
-
-    if (gStdOutPipe != INVALID_HANDLE_VALUE)
-        gStdOutThread = StartHandlingRedirectionPipe(gStdOutPipe, STD_OUTPUT_HANDLE);
-
-    if (gStdErrPipe != INVALID_HANDLE_VALUE)
-        gStdErrThread = StartHandlingRedirectionPipe(gStdErrPipe, STD_ERROR_HANDLE);
 }
 
 DWORD WaitForTargetProcessTermination()
@@ -143,12 +152,6 @@ DWORD WaitForTargetProcessTermination()
         SYS_ERROR();
 
     return result;
-}
-
-void SetIpcPipe()
-{
-    if ((gIpcPipe = CreateIpcPipe(gIpcPipeName)) == INVALID_HANDLE_VALUE)
-        SYS_ERROR();
 }
 
 int ExecuteStub()

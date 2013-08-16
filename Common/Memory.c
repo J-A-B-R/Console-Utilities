@@ -2,11 +2,11 @@
 #include "Common.h"
 
 
-LPVOID MemoryAlloc(size_t count, size_t size)
+LPVOID MemoryAlloc(size_t count, size_t size, BOOL zeroFill)
 {
     LPVOID ptr;
     
-    ptr = (TCHAR*)HeapAlloc(GetProcessHeap(), 0, count * size);
+    ptr = (TCHAR*)HeapAlloc(GetProcessHeap(), (zeroFill) ? HEAP_ZERO_MEMORY : 0, count * size);
 
     if (ptr == NULL)
         // HeapAlloc doesn't call SetLastError of its own
@@ -22,7 +22,7 @@ BOOL MemoryFree(LPVOID ptr)
 
 TCHAR* StringAlloc(size_t length)
 {
-    TCHAR* newStr = (TCHAR*)MemoryAlloc(length + 1, sizeof(TCHAR));
+    TCHAR* newStr = (TCHAR*)MemoryAlloc(length + 1, sizeof(TCHAR), FALSE);
 
     if (newStr != NULL)
         *newStr = 0;

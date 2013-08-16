@@ -69,6 +69,7 @@ DWORD WINAPI HandleRedirectionPipe(LPVOID lpParam)
     BYTE buffer[PIPE_BUFFER_SIZE];
     DWORD error = ERROR_SUCCESS;
     BOOL eof = FALSE;
+    BOOL isIncomingDiskType;
 
     if (lpParam == NULL)
         return ERROR_INVALID_PARAMETER;
@@ -78,18 +79,20 @@ DWORD WINAPI HandleRedirectionPipe(LPVOID lpParam)
     outgoing = ri->Outgoing;
     pipe = (ri->RedirectionPipe == Incoming) ? ri->Incoming : ri->Outgoing;
     MemoryFree(ri);
+    isIncomingDiskType = GetFileType(incoming) == FILE_TYPE_DISK;
     SetLastError(ERROR_SUCCESS);
     if (ConnectNamedPipe(pipe, NULL) || (error = GetLastError()) == ERROR_PIPE_CONNECTED) {
         while (!gExiting && !eof) {
             if (!ReadFile(incoming, buffer, PIPE_BUFFER_SIZE, &read, NULL))
                 break;
-            if (read < PIPE_BUFFER_SIZE)
+            if (isIncomingDiskType && read < PIPE_BUFFER_SIZE)
                 eof = TRUE;
             if (!WriteFile(outgoing, buffer, read, &written, NULL) || written != read)
                 break;
             if (!FlushFileBuffers(outgoing))
                 break;
         }
+        error = GetLastError();
         if (!DisconnectNamedPipe(pipe) && (error == ERROR_SUCCESS || error == ERROR_BROKEN_PIPE))
             error = GetLastError();
     }
@@ -107,7 +110,7 @@ HANDLE StartHandlingRedirectionPipe(HANDLE pipe, DWORD nStdHandle)
 {
     DWORD threadId;
     HANDLE hThread;
-    REDIRECTION_INFO* ri = (REDIRECTION_INFO*)MemoryAlloc(1, sizeof(REDIRECTION_INFO));
+    REDIRECTION_INFO* ri = (REDIRECTION_INFO*)MemoryAlloc(1, sizeof(REDIRECTION_INFO), FALSE);
 
     if (ri == NULL)
         SYS_ERROR();

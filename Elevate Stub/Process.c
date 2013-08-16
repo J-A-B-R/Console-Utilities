@@ -3,6 +3,7 @@
 #include "Process.h"
 
 
+// Check that the stub is launched in Vista or above and is elevated
 void CheckSuitability()
 {
     if (!IsVistaOrAbove())
@@ -11,6 +12,7 @@ void CheckSuitability()
         APP_ERROR(IDS_MUST_BE_ELEVATED);
 }
 
+// Start communication with the non-elevated launcher
 void StartIpcCommunication(TCHAR* lpCmdLine)
 {
     if (!StartsWith(lpCmdLine, PIPE_NAME_PREFIX))
@@ -29,7 +31,8 @@ void StartIpcCommunication(TCHAR* lpCmdLine)
 // Get current directory, standard handles names and environment block
 void ReceiveIpcData()
 {
-    if (!ReceiveString(gIpcPipe, &gCurrentDirectory) ||
+    if (!ReceiveDword(gIpcPipe, &gLauncherProcessId) ||
+        !ReceiveString(gIpcPipe, &gCurrentDirectory) ||
         !ReceiveString(gIpcPipe, &gStdInFileName) ||
         !ReceiveString(gIpcPipe, &gStdOutFileName) ||
         !ReceiveString(gIpcPipe, &gStdErrFileName) ||
@@ -38,6 +41,7 @@ void ReceiveIpcData()
         SYS_ERROR();
 }
 
+// Open standard handle to console device or to redirection pipe
 HANDLE OpenStdFile(TCHAR* stdFileName, DWORD desiredAccess)
 {
     HANDLE handle;
@@ -46,6 +50,8 @@ HANDLE OpenStdFile(TCHAR* stdFileName, DWORD desiredAccess)
     // if the console devices don't have read and write access, weird behavior ensues
     if (!_tcsicmp(stdFileName, CONSOLE_INPUT_FILE_NAME) || !_tcsicmp(stdFileName, CONSOLE_OUTPUT_FILE_NAME))
         desiredAccess = GENERIC_READ | GENERIC_WRITE;
+    else
+        gRedirectionPresent = TRUE;
 
     sa.nLength = sizeof(SECURITY_ATTRIBUTES);
     sa.bInheritHandle = TRUE;
@@ -79,26 +85,74 @@ void PrepareForLaunching()
     gStdErrFile = OpenStdFile(gStdErrFileName, GENERIC_WRITE);
 }
 
+// Creates an attribute list for attribute parent process
+PPROC_THREAD_ATTRIBUTE_LIST PrepareAttributeList()
+{
+    HANDLE process;
+    SIZE_T size = 0;
+    PPROC_THREAD_ATTRIBUTE_LIST attrList;
+
+    // Reparenting the target process brakes the redirection pipes
+    if (gRedirectionPresent)
+        return NULL;
+
+    if (!(process = OpenProcess(PROCESS_ALL_ACCESS, FALSE, gLauncherProcessId)))
+        return NULL;
+
+    if ((!InitializeProcThreadAttributeList(NULL, 1, 0, &size) && GetLastError() != ERROR_INSUFFICIENT_BUFFER) || size == 0)
+        return NULL;
+
+    if ((attrList = (PPROC_THREAD_ATTRIBUTE_LIST)MemoryAlloc(size, 1, TRUE)) == NULL)
+        return NULL;
+
+    if (!InitializeProcThreadAttributeList(attrList, 1, 0, &size)) {
+        MemoryFree(attrList);
+        return NULL;
+    }
+
+    if (!UpdateProcThreadAttribute(attrList, 0, PROC_THREAD_ATTRIBUTE_PARENT_PROCESS, &process, sizeof(process), NULL, NULL)) {
+        MemoryFree(attrList);
+        return NULL;
+    }
+
+    return attrList;
+}
+
+// Create the target process in suspended state with the correct standard
+// handles and does a best effort to make the non-elevated launcher as
+// the parent process
 void CreateTargetProcess()
 {
-    STARTUPINFO si;
+    STARTUPINFOEX sie;
+    LPSTARTUPINFO si;
     PROCESS_INFORMATION pi;
+    BOOL result;
 #ifdef UNICODE
     DWORD creationFlags = CREATE_SUSPENDED | CREATE_UNICODE_ENVIRONMENT;
 #else
     DWORD creationFlags = CREATE_SUSPENDED;
 #endif
 
-    ZeroMemory(&si, sizeof(STARTUPINFO));
+    ZeroMemory(&sie, sizeof(STARTUPINFOEX));
     ZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
 
-    si.cb = sizeof(STARTUPINFO);
-    si.hStdInput = gStdInFile;
-    si.hStdOutput = gStdOutFile;
-    si.hStdError = gStdErrFile;
-    si.dwFlags = STARTF_USESTDHANDLES;
+    sie.StartupInfo.hStdInput = gStdInFile;
+    sie.StartupInfo.hStdOutput = gStdOutFile;
+    sie.StartupInfo.hStdError = gStdErrFile;
+    sie.StartupInfo.dwFlags = STARTF_USESTDHANDLES;
 
-    if (!CreateProcess(NULL, gCmdLine, NULL, NULL, TRUE, creationFlags, gEnvironmentBlock, gCurrentDirectory, &si, &pi))
+    if ((sie.lpAttributeList = PrepareAttributeList()) != NULL) {
+        creationFlags |= EXTENDED_STARTUPINFO_PRESENT;
+        sie.StartupInfo.cb = sizeof(STARTUPINFOEX);
+        si = (LPSTARTUPINFO)&sie;
+    } else {
+        sie.StartupInfo.cb = sizeof(STARTUPINFO);
+        si = &sie.StartupInfo;
+    }
+
+    result = CreateProcess(NULL, gCmdLine, NULL, NULL, TRUE, creationFlags, gEnvironmentBlock, gCurrentDirectory, si, &pi);
+    MemoryFree(sie.lpAttributeList);
+    if (!result)
         SYS_ERROR();
 
     gTargetProcessId = pi.dwProcessId;
@@ -106,6 +160,7 @@ void CreateTargetProcess()
     gTargetThread = pi.hThread;
 }
 
+// Sends the target process ID and waits the acknowledgment
 void FinishIpcCommunication()
 {
     DWORD data;
@@ -120,8 +175,14 @@ void FinishIpcCommunication()
         APP_ERROR(IDS_COMM_ERROR);
 }
 
-void ResumeTargetProcess()
+// Resumes the target process
+void ResumeAndWaitTargetProcess()
 {
     if (!ResumeThread(gTargetThread))
         SYS_ERROR();
+
+    // Waits for target process termination if it wasn't reparented
+    // to avoid breaking the process tree up to the launcher
+    if (gRedirectionPresent)
+        WaitForSingleObject(gTargetProcess, INFINITE);
 }

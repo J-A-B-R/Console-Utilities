@@ -39,15 +39,16 @@ TCHAR* GetSystemErrorMessage(DWORD dwMessageId)
 {
     TCHAR* errorMsg;
 
-    return (FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+    return (FormatMessage(
+            FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
             NULL,
             dwMessageId,
             MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
             (LPTSTR)&errorMsg,
             0,
             NULL))
-            ? errorMsg
-            : NULL;
+        ? errorMsg
+        : NULL;
 }
 
 TCHAR* GetCustomErrorMessage(DWORD dwMessageId)

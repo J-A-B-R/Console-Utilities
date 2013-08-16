@@ -2,6 +2,10 @@
 #include "Global.h"
 
 
+// Any fatal error terminates the target process. As the
+// target process is created suspended and the very last
+// operation of the stub is resuming it, then this isn't
+// a dangerous move
 #define KILL_TARGET_PROC(hProc)\
     if (hProc != NULL) {\
         TerminateProcess(hProc, 0);\

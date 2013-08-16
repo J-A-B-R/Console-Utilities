@@ -56,7 +56,7 @@ void ExitAppError(UINT nMsgId);
 #pragma endregion
 
 #pragma region Memory
-LPVOID MemoryAlloc(size_t count, size_t size);
+LPVOID MemoryAlloc(size_t count, size_t size, BOOL zeroFill);
 
 BOOL MemoryFree(LPVOID lp);
 
