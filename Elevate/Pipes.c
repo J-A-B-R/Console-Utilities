@@ -89,7 +89,8 @@ DWORD WINAPI HandleRedirectionPipe(LPVOID lpParam)
                 eof = TRUE;
             if (!WriteFile(outgoing, buffer, read, &written, NULL) || written != read)
                 break;
-            if (!FlushFileBuffers(outgoing))
+            // some devices don't support this function
+            if (!FlushFileBuffers(outgoing) && GetLastError() != ERROR_INVALID_FUNCTION)
                 break;
         }
         error = GetLastError();
@@ -129,4 +130,49 @@ HANDLE StartHandlingRedirectionPipe(HANDLE pipe, DWORD nStdHandle)
         SYS_ERROR();
 
     return hThread;
+}
+
+void SignalHandlingRedirecionPipeEnding()
+{
+    gExiting = TRUE;
+}
+
+BOOL WaitHandlingRedirecionPipeEnding()
+{
+    HANDLE threads[3];
+    DWORD threadCount = 0;
+    DWORD threadExitCode;
+    UINT i;
+
+    if (gStdInThread != NULL)
+        threads[threadCount++] = gStdInThread;
+    if (gStdOutThread != NULL)
+        threads[threadCount++] = gStdOutThread;
+    if (gStdErrThread != NULL)
+        threads[threadCount++] = gStdErrThread;
+    if (threadCount > 0)
+        switch (WaitForMultipleObjects(threadCount, threads, TRUE, MAX_WAITING_TIME))
+        {
+        case WAIT_OBJECT_0:
+        case WAIT_ABANDONED_0:
+            for (i = 0; i < threadCount; i++) {
+                if (GetExitCodeThread(threads[i], &threadExitCode) && threadExitCode != ERROR_SUCCESS) {
+                    if (threadExitCode == ERROR_NO_DATA)
+                        AppError(IDS_PIPE_CLOSED);
+                    else {
+                        SetLastError(threadExitCode);
+                        SysError();
+                    }
+                    return FALSE;
+                }
+            }
+            break;
+        case WAIT_FAILED:
+            SysError();
+            return FALSE;
+        case WAIT_TIMEOUT:
+            // NADA
+            break;
+        };
+    return TRUE;
 }

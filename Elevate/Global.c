@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Global.h"
+#include "Pipes.h"
 
 
 void SetUp()
@@ -41,15 +42,11 @@ void CloseThreadOrProcessSafe(HANDLE handle)
 
 int CleanUp(int exitCode)
 {
-    HANDLE threads[3];
-    DWORD threadCount = 0;
-    DWORD threadExitCode;
     DWORD processExitCode;
     BOOL error = FALSE;
-    UINT i;
 
     // Signal termination to the pipe redirection threads
-    gExiting = TRUE;
+    SignalHandlingRedirecionPipeEnding();
 
     // Disconnect and close all existing pipes
     CloseServerPipeSafe(gIpcPipe);
@@ -58,37 +55,7 @@ int CleanUp(int exitCode)
     CloseServerPipeSafe(gStdErrPipe);
 
     // Wait the termination of all pipe redirection threads and check the termination cause
-    if (gStdInThread != NULL)
-        threads[threadCount++] = gStdInThread;
-    if (gStdOutThread != NULL)
-        threads[threadCount++] = gStdOutThread;
-    if (gStdErrThread != NULL)
-        threads[threadCount++] = gStdErrThread;
-    if (threadCount > 0)
-        switch (WaitForMultipleObjects(threadCount, threads, TRUE, MAX_WAITING_TIME))
-        {
-        case WAIT_OBJECT_0:
-        case WAIT_ABANDONED_0:
-            for (i = 0; i < threadCount; i++) {
-                if (GetExitCodeThread(threads[i], &threadExitCode) && threadExitCode != ERROR_SUCCESS) {
-                    if (threadExitCode == ERROR_NO_DATA)
-                        AppError(IDS_PIPE_CLOSED);
-                    else {
-                        SetLastError(threadExitCode);
-                        SysError();
-                    }
-                    error = TRUE;
-                }
-            }
-            break;
-        case WAIT_FAILED:
-            SysError();
-            error = TRUE;
-            break;
-        case WAIT_TIMEOUT:
-            // NADA
-            break;
-        };
+    error = WaitHandlingRedirecionPipeEnding();
 
     // Pass-through the stub process termination error
     if (gStubProcess != NULL && 
@@ -100,6 +67,8 @@ int CleanUp(int exitCode)
             error = TRUE;
     }
 
+    // if this program or the stub had errors and the target process returned
+    // a success exit code, then exit with failure
     if (error && exitCode == EXIT_SUCCESS)
         exitCode = EXIT_FAILURE;
 
