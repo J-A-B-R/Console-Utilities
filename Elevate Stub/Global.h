@@ -7,8 +7,6 @@ TCHAR* gCurrentDirectory;
 HANDLE gIpcPipe;
 TCHAR gIpcPipeName[PIPE_NAME_LENGTH + 1];
 
-BOOL gRedirectionPresent;
-
 HANDLE gStdInFile;
 HANDLE gStdOutFile;
 HANDLE gStdErrFile;

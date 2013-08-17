@@ -13,4 +13,4 @@ void CreateTargetProcess();
 
 void FinishIpcCommunication();
 
-void ResumeAndWaitTargetProcess();
+void ResumeAndWaitForTargetProcess();

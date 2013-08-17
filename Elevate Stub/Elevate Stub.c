@@ -19,7 +19,7 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
     PrepareForLaunching();
     CreateTargetProcess();
     FinishIpcCommunication();
-    ResumeAndWaitTargetProcess();
+    ResumeAndWaitForTargetProcess();
     CleanUp();
 
     return EXIT_SUCCESS;
