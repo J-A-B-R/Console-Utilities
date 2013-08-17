@@ -6,6 +6,6 @@ HANDLE CreateRedirectionPipe(TCHAR* lpPipeName, DWORD nStdHandle);
 
 HANDLE StartHandlingRedirectionPipe(HANDLE hPipe, DWORD nStdHandle);
 
-void SignalHandlingRedirecionPipeEnding();
+void SignalHandlingRedirecionPipesForExiting();
 
-BOOL WaitHandlingRedirecionPipeEnding();
+BOOL WaitHandlingRedirecionPipesForExiting();

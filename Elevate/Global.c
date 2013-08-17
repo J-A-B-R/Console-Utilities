@@ -26,17 +26,9 @@ void SetUp()
     gStdErrPipe = INVALID_HANDLE_VALUE;
 }
 
-void CloseServerPipeSafe(HANDLE handle)
+void CloseHandleSafe(HANDLE handle)
 {
-    if (handle != INVALID_HANDLE_VALUE) {
-        DisconnectNamedPipe(handle);
-        CloseHandle(handle);
-    }
-}
-
-void CloseThreadOrProcessSafe(HANDLE handle)
-{
-    if (handle != NULL)
+    if (handle != NULL && handle != INVALID_HANDLE_VALUE)
         CloseHandle(handle);
 }
 
@@ -46,16 +38,17 @@ int CleanUp(int exitCode)
     BOOL error = FALSE;
 
     // Signal termination to the pipe redirection threads
-    SignalHandlingRedirecionPipeEnding();
+    SignalHandlingRedirecionPipesForExiting();
 
-    // Disconnect and close all existing pipes
-    CloseServerPipeSafe(gIpcPipe);
-    CloseServerPipeSafe(gStdInPipe);
-    CloseServerPipeSafe(gStdOutPipe);
-    CloseServerPipeSafe(gStdErrPipe);
+    // Close all existing pipes
+    // Some programs can get confused if we disconnect before closing
+    CloseHandleSafe(gIpcPipe);
+    CloseHandleSafe(gStdInPipe);
+    CloseHandleSafe(gStdOutPipe);
+    CloseHandleSafe(gStdErrPipe);
 
     // Wait the termination of all pipe redirection threads and check the termination cause
-    error = WaitHandlingRedirecionPipeEnding();
+    error = WaitHandlingRedirecionPipesForExiting();
 
     // Pass-through the stub process termination error
     if (gStubProcess != NULL && 
@@ -72,12 +65,12 @@ int CleanUp(int exitCode)
     if (error && exitCode == EXIT_SUCCESS)
         exitCode = EXIT_FAILURE;
 
-    // Close the handles to pipe redirection threads and the target process
-    CloseThreadOrProcessSafe(gStdInThread);
-    CloseThreadOrProcessSafe(gStdOutThread);
-    CloseThreadOrProcessSafe(gStdErrThread);
-    CloseThreadOrProcessSafe(gStubProcess);
-    CloseThreadOrProcessSafe(gTargetProcess);
+    // Close the handles to pipe redirection threads and to the target process
+    CloseHandleSafe(gStdInThread);
+    CloseHandleSafe(gStdOutThread);
+    CloseHandleSafe(gStdErrThread);
+    CloseHandleSafe(gStubProcess);
+    CloseHandleSafe(gTargetProcess);
 
     // Free allocated memory for strings
     StringFree(gCurrentDirectory);

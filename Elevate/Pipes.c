@@ -80,21 +80,26 @@ DWORD WINAPI HandleRedirectionPipe(LPVOID lpParam)
     pipe = (ri->RedirectionPipe == Incoming) ? ri->Incoming : ri->Outgoing;
     MemoryFree(ri);
     isIncomingDiskType = GetFileType(incoming) == FILE_TYPE_DISK;
-    SetLastError(ERROR_SUCCESS);
     if (ConnectNamedPipe(pipe, NULL) || (error = GetLastError()) == ERROR_PIPE_CONNECTED) {
         while (!gExiting && !eof) {
-            if (!ReadFile(incoming, buffer, PIPE_BUFFER_SIZE, &read, NULL))
+            if (!ReadFile(incoming, buffer, PIPE_BUFFER_SIZE, &read, NULL)) {
+                error = GetLastError();
                 break;
+            }
             if (isIncomingDiskType && read < PIPE_BUFFER_SIZE)
                 eof = TRUE;
-            if (!WriteFile(outgoing, buffer, read, &written, NULL) || written != read)
+            if (!WriteFile(outgoing, buffer, read, &written, NULL) || written != read) {
+                error = GetLastError();
                 break;
+            }
             // some devices don't support this function
-            if (!FlushFileBuffers(outgoing) && GetLastError() != ERROR_INVALID_FUNCTION)
+            if (!FlushFileBuffers(outgoing) && GetLastError() != ERROR_INVALID_FUNCTION) {
+                error = GetLastError();
                 break;
+            }
         }
-        error = GetLastError();
-        if (!DisconnectNamedPipe(pipe) && (error == ERROR_SUCCESS || error == ERROR_BROKEN_PIPE))
+        // we close directly the pipe; if we disconnect first, some programs (e.g.: find.exe) will complain
+        if (!CloseHandle(pipe))
             error = GetLastError();
     }
 
@@ -132,12 +137,12 @@ HANDLE StartHandlingRedirectionPipe(HANDLE pipe, DWORD nStdHandle)
     return hThread;
 }
 
-void SignalHandlingRedirecionPipeEnding()
+void SignalHandlingRedirecionPipesForExiting()
 {
     gExiting = TRUE;
 }
 
-BOOL WaitHandlingRedirecionPipeEnding()
+BOOL WaitHandlingRedirecionPipesForExiting()
 {
     HANDLE threads[3];
     DWORD threadCount = 0;
