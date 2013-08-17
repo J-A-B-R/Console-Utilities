@@ -9,11 +9,11 @@ int _tmain(int argc, TCHAR* argv[])
 
     ENSURE_DEBUGGER();
 
-    if (argc == 1 || (argc == 2 && !_tcsicmp(*argv, _T("/?"))))
+    if (argc == 1 || (argc == 2 && !_tcsicmp(*(argv + 1), _T("/?"))))
         return PrintUsage();
 
     // TODO:
-    // /s return without blocking, like start
+    // /r (raw) do not interpret internal cmd commands as cmd /d /c command
     // /n do not copy env vars
 
     SetUp();

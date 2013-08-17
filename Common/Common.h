@@ -21,6 +21,8 @@ BOOL IsElevated();
 #define CONSOLE_FILE_NAME_MAX_LENGTH 7
 #define ATTRIBUTE_ERROR 0xffff
 
+BOOL IsConsoleHandle(HANDLE hHandle);
+
 WORD MergeAttributes(TCHAR* lpszNewAttrs, WORD nCurrentAttrs);
 
 BOOL SetCursorPosition(SHORT x, SHORT y, BOOL xRel, BOOL yRel);

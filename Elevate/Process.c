@@ -35,7 +35,7 @@ HANDLE EstablishStdHandle(TCHAR* sNameBuffer, TCHAR* sConsoleName, DWORD nStdHan
 {
     HANDLE h = GetStdHandle(nStdHandle);
 
-    if (h == INVALID_HANDLE_VALUE || GetFileType(h) == FILE_TYPE_CHAR) {
+    if (h == INVALID_HANDLE_VALUE || IsConsoleHandle(h)) {
         _tcscpy_s(sNameBuffer, CONSOLE_FILE_NAME_MAX_LENGTH + 1, sConsoleName);
         return INVALID_HANDLE_VALUE;
     }

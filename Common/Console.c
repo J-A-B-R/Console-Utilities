@@ -2,6 +2,16 @@
 #include "Common.h"
 
 
+BOOL IsConsoleHandle(HANDLE hHandle)
+{
+    DWORD lastError = GetLastError();
+    DWORD mode;
+    BOOL result = GetConsoleMode(hHandle, &mode);
+
+    SetLastError(lastError);
+    return result;
+}
+
 WORD MergeAttributes(TCHAR* lpszNewAttrs, WORD nCurrentAttrs)
 {
     WORD attrs;
