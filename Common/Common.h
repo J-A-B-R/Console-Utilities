@@ -36,7 +36,7 @@ BOOL SetAttributes(WORD attr);
 #ifdef _DEBUG
 void Alert(TCHAR* message);
 #define ALERT(x) Alert(_T(x))
-#define ENSURE_DEBUGGER() if (!IsDebuggerPresent() && !(GetAsyncKeyState(VK_LSHIFT) & 0x8000)) Alert(_T("Attach debugger now!"))
+#define ENSURE_DEBUGGER() if (!IsDebuggerPresent() && !(GetAsyncKeyState(VK_LSHIFT) & 0x8000)) Alert(_T("Attach a debugger now!\n\n(To skip this dialog, press left shift key next time)."))
 #else
 #define ALERT(x)
 #define ENSURE_DEBUGGER()
