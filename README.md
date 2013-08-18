@@ -1,7 +1,7 @@
 Console Utilities
 =================
 
-Console Utilities are a set of lightweight Win32 console programs written in pure C that offer funtionality and console management not found on Windows.
+Console Utilities are a set of lightweight Win32 console programs written in pure C that offer funtionality and console management not found on stock Windows commands.
 
 For detailed operation, **click on the name of the command below** or check the **in-command help** with option **`/?`**. The help included on each command is in english and spanish. If the Windows locale is a spanish variant, it'll show the spanish help, otherwise it'll show the english help.
 
