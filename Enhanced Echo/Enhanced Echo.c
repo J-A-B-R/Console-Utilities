@@ -15,8 +15,11 @@
 #define APP_ERROR(id) { if (isConsole) SetAttributes(originalAttrs); ExitAppError(id); }
 #define SYS_ERROR() { if (isConsole) { SetAttributes(originalAttrs); ExitSysError(); } }
 
+#define DEFAULT_ESCAPE_CHARACTER '@'
+
 int _tmain(int argc, _TCHAR* argv[])
 {
+    TCHAR escChar = DEFAULT_ESCAPE_CHARACTER;
     int i;
     int state;
     WORD originalAttrs;
@@ -89,11 +92,22 @@ int _tmain(int argc, _TCHAR* argv[])
                 _puttchar('@');
                 state = 0;
                 break;
+            case '[':
+                state = 30;
+                break;
+            case '=':
+                state = 40;
+                break;
             case '#':
                 state = 0;
                 goto exit_loop;
             default:
-                APP_ERROR(IDS_UNKNOWN_OPTION);
+                if (k == escChar) {
+                    _puttchar(escChar);
+                    state = 0;
+                } else {
+                    APP_ERROR(IDS_UNKNOWN_OPTION);
+                }
                 break;
             }
             break;
@@ -152,6 +166,33 @@ int _tmain(int argc, _TCHAR* argv[])
                 if (isConsole && !SetCursorPosition((SHORT)x, (SHORT)y, xRel, yRel))
                     SYS_ERROR();
             }
+            state = 0;
+            break;
+        case 30:
+            if (k == '[') {
+                state = 31;
+            } else {
+                APP_ERROR(IDS_WRONG_OPTION_ARG);
+            }
+            break;
+        case 31:
+            if (k == ']') {
+                state = 32;
+            } else {
+                _puttchar(k);
+            }
+            break;
+        case 32:
+            if (k == ']') {
+                state = 0;
+            } else {
+                _puttchar(']');
+                _puttchar(k);
+                state = 31;
+            }
+            break;
+        case 40:
+            escChar = k;
             state = 0;
             break;
         }
