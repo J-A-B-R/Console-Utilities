@@ -27,7 +27,7 @@ int _tmain(int argc, _TCHAR* argv[])
     }
 
     if (!_tcsicmp(argv[1], _T("/?")))
-        return PrintUsage();
+        return PRINT_USAGE();
 
     if ((originalAttrs = oldAttrs = GetAttributes()) == ATTRIBUTE_ERROR) {
         SYS_ERROR();

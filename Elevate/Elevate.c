@@ -10,7 +10,7 @@ int _tmain(int argc, TCHAR* argv[])
     ENSURE_DEBUGGER();
 
     if (argc == 1 || (argc == 2 && !_tcsicmp(*(argv + 1), _T("/?"))))
-        return PrintUsage();
+        return PRINT_USAGE();
 
     // TODO:
     // /r (raw) do not interpret internal cmd commands as cmd /d /c command

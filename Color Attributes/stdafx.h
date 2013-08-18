@@ -16,3 +16,5 @@
 
 #include "resource.h"
 #include "Common.h"
+#include "Version.inc"
+#include "..\Info.inc"

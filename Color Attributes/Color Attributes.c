@@ -38,7 +38,7 @@ int _tmain(int argc, TCHAR* argv[])
     arg = argv[1];
 
     if (!_tcsicmp(arg, _T("/?")))
-        return PrintUsage();
+        return PRINT_USAGE();
 
     if (!_tcsicmp(arg, _T("/p")))
         return PrintAttributes(3);

@@ -46,6 +46,8 @@ void Alert(TCHAR* message);
 
 #define IS_CUSTOM_ERROR_CODE(e) ((e & ERROR_CUSTOM_CODE_MASK) == ERROR_CUSTOM_CODE_MASK)
 
+TCHAR* GetProcessName();
+
 TCHAR* GetSystemErrorMessage(DWORD dwMessageId);
 
 void SysError();
@@ -90,6 +92,8 @@ int RedirectStdToConsole(DWORD nStdHandle);
 #pragma endregion
 
 #pragma region Resources
+#define PRINT_USAGE() (_tprintf(_T("\n%s v%s  %s\n\n"), GetProcessName(), _T(VER_FULLVERSION), _T(COPYRIGHT_INFO)), PrintUsage())
+
 TCHAR* SkipFirstCmdLineArg(TCHAR* lpszCommandLine, BOOL nCorrectExtraWhiteSpace);
 
 TCHAR* GetString(UINT nMsgId, TCHAR* lpszDefaultMsg);
