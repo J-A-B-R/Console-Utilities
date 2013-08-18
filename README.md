@@ -3,31 +3,29 @@ Console Utilities
 
 Console Utilities are a set of lightweight Win32 console programs written in pure C that offer funtionality and console management not found on Windows.
 
-For detailed operation, check the in-command help with option `/?`.
-The help included on each command is in english and spanish. If the Windows locale is a spanish variant, it'll show the spanish help, otherwise it'll show the english help.
+For detailed operation, **click on the name of the command below** or check the **in-command help** with option **`/?`**. The help included on each command is in english and spanish. If the Windows locale is a spanish variant, it'll show the spanish help, otherwise it'll show the english help.
 
 
 Installation
 ------------
 You can download or clone the project and compile it for yourself or you can download a precompiled bundle. Whatever the method you choose,
-put the executables in a directory included in the PATH environment variable.
+put the executables in a directory included in the `PATH` environment variable.
 
 ###Bundles:
-* [Console Utilities v1.0.1 32 bits](https://rapidshare.com/files/2846596904/Console-Utilities_x86_1.0.1.zip)
+* [Console Utilities v1.1.0 32 bits](https://rapidshare.com/files/2846596904/Console-Utilities_x86_1.0.1.zip)
 
-* [Console Utilities v1.0.1 64 bits](https://rapidshare.com/files/2824059969/Console-Utilities_x64_1.0.1.zip)
+* [Console Utilities v1.1.0 64 bits](https://rapidshare.com/files/2824059969/Console-Utilities_x64_1.0.1.zip)
 
 
 Commands included so far
 ------------------------
 
-- **`CCOLOR`**: Gets or sets the current foreground and background console colors.
+- [**`CCOLOR`**](https://github.com/J-A-B-R/Console-Utilities/blob/master/Color%20Attributes/EnglishHelp.txt): Gets or sets the current foreground and background console colors.
 
-- **`EECHO`**: Displays a message enhanced with escaped characters with several functions.
+- [**`EECHO`**](https://github.com/J-A-B-R/Console-Utilities/blob/master/Enhanced%20Echo/EnglishHelp.txt): Displays a message enhanced with escaped characters with several functions.
 
-- **`ELEV`**: If the UAC is enabled, launchs a program elevated, but using the existing console, instead of spawning a new one.
-
-	Inpired by [The Code Project](http://www.codeproject.com/) article [Vista UAC: The Definitive Guide](http://www.codeproject.com/Articles/19165/Vista-UAC-The-Definitive-Guide).
+- [**`ELEV`**](https://github.com/J-A-B-R/Console-Utilities/blob/master/Elevate/EnglishHelp.txt): If the UAC is enabled, launchs a program elevated, but using the existing console, instead of spawning a new one.  
+(Inpired by [The Code Project](http://www.codeproject.com/) article [Vista UAC: The Definitive Guide](http://www.codeproject.com/Articles/19165/Vista-UAC-The-Definitive-Guide)).
 
 
 Commands on roadmap
@@ -48,8 +46,14 @@ So here I am, back to basics facing the arid Win32 API that I've almost forgotte
 
 History
 -------
+### 1.1
+- Published command **`ELEV`**.
+- Corrected some help erratas.
+- Some internal enhancements and corrections.
+
 ### 1.0
 &ensp;Initial release.
+
 
 
 License
