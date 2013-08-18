@@ -38,7 +38,7 @@ int _tmain(int argc, _TCHAR* argv[])
     }
 
     if (!_tcsicmp(argv[1], _T("/?")))
-        return PRINT_USAGE();
+        return PRINT_USAGE(VER_FULLVERSION, COPYRIGHT_INFO);
 
     if ((originalAttrs = oldAttrs = GetAttributes()) == ATTRIBUTE_ERROR) {
         SYS_ERROR();

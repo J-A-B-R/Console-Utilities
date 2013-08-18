@@ -49,7 +49,7 @@ int _tmain(int argc, TCHAR* argv[])
     arg = argv[1];
 
     if (!_tcsicmp(arg, _T("/?")))
-        return PRINT_USAGE();
+        return PRINT_USAGE(VER_FULLVERSION, COPYRIGHT_INFO);
 
     if (!_tcsicmp(arg, _T("/p")))
         return PrintAttributes(3);

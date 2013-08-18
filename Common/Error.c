@@ -17,7 +17,6 @@
 #define UNKNOWN_ERROR_MESSAGE _T("???")
 
 
-#ifdef _DEBUG
 TCHAR ProcessName[MAX_PATH + 1];
 
 TCHAR* GetProcessName()
@@ -39,6 +38,7 @@ TCHAR* GetProcessName()
     return ProcessName;
 }
 
+#ifdef _DEBUG
 void Alert(TCHAR* message)
 {
     TCHAR caption[MAX_PATH + 1];

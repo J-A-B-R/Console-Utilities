@@ -103,7 +103,7 @@ int RedirectStdToConsole(DWORD nStdHandle);
 #pragma endregion
 
 #pragma region Resources
-#define PRINT_USAGE() (_tprintf(_T("\n%s v%s  %s\n\n"), GetProcessName(), _T(VER_FULLVERSION), _T(COPYRIGHT_INFO)), PrintUsage())
+#define PRINT_USAGE(ver, auth) (_tprintf(_T("\n%s v%s  %s\n\n"), GetProcessName(), _T(ver), _T(auth)), PrintUsage())
 
 TCHAR* SkipFirstCmdLineArg(TCHAR* lpszCommandLine, BOOL nCorrectExtraWhiteSpace);
 
