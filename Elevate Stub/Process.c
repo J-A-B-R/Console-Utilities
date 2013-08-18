@@ -136,5 +136,9 @@ void ResumeAndWaitForTargetProcess()
     // Waits for target process termination to avoid breaking the process tree
     // up to the launcher. Other than that, the stub has finished its job, so
     // further errors are irrelevant
+    // Trying to create the target process with the launcher as parent process
+    // through PROC_THREAD_ATTRIBUTE_PARENT_PROCESS attribute to get rid of the
+    // stub process, results in the target process loosing its elevated status
+    // and the breaking of any redirection pipes
     WaitForSingleObject(gTargetProcess, INFINITE);
 }

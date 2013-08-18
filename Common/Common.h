@@ -36,7 +36,7 @@ BOOL SetAttributes(WORD attr);
 #ifdef _DEBUG
 void Alert(TCHAR* message);
 #define ALERT(x) Alert(_T(x))
-#define ENSURE_DEBUGGER() if (!IsDebuggerPresent()) Alert(_T("Attach debugger now!"))
+#define ENSURE_DEBUGGER() if (!IsDebuggerPresent() && !(GetAsyncKeyState(VK_LSHIFT) & 0x8000)) Alert(_T("Attach debugger now!"))
 #else
 #define ALERT(x)
 #define ENSURE_DEBUGGER()
