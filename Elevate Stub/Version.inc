@@ -1,6 +1,6 @@
 #define VER_MAJORNUMBER 0
 #define VER_MINORNUMBER 9
-#define VER_DELTANUMBER 1
+#define VER_DELTANUMBER 2
 #define VER_BUILDNUMBER 54
 
 #define STR(value) #value
