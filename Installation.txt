@@ -1,0 +1,2 @@
+1. Copy the executable files to a directory included in the environment variable PATH.
+2. Execute any program with the option /? to see a detailed help.
