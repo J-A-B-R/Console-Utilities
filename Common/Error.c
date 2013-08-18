@@ -15,7 +15,8 @@ TCHAR* GetProcessName()
     TCHAR *name;
 
     if (*ProcessName == 0) {
-        buffer = StringAlloc(MAX_PATH);
+        if ((buffer = StringAlloc(MAX_PATH)) == NULL)
+            return _T("");
         GetModuleFileName(NULL, buffer, MAX_PATH + 1);
         if ((name = _tcsrchr(buffer, '\\')) != NULL)
             name++;
