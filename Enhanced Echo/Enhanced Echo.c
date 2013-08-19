@@ -15,11 +15,12 @@
 #define APP_ERROR(id) { if (isConsole) SetAttributes(originalAttrs); ExitAppError(id); }
 #define SYS_ERROR() { if (isConsole) { SetAttributes(originalAttrs); ExitSysError(); } }
 
-#define DEFAULT_ESCAPE_CHARACTER '@'
+#define DEFAULT_ESCAPE_CHARACTER '$'
 
 int _tmain(int argc, _TCHAR* argv[])
 {
     TCHAR escChar = DEFAULT_ESCAPE_CHARACTER;
+    TCHAR rawBeginChar, rawEndChar;
     int i;
     int state;
     WORD originalAttrs;
@@ -54,7 +55,7 @@ int _tmain(int argc, _TCHAR* argv[])
         switch (state)
         {
         case 0:
-            if (k == '@') {
+            if (k == escChar) {
                 state = 1;
             } else {
                 _puttchar(k);
@@ -88,11 +89,19 @@ int _tmain(int argc, _TCHAR* argv[])
                 _puttchar('\t');
                 state = 0;
                 break;
-            case '@':
-                _puttchar('@');
-                state = 0;
-                break;
             case '[':
+                rawBeginChar = '[';
+                rawEndChar = ']';
+                state = 30;
+                break;
+            case '{':
+                rawBeginChar = '{';
+                rawEndChar = '}';
+                state = 30;
+                break;
+            case '(':
+                rawBeginChar = '(';
+                rawEndChar = ')';
                 state = 30;
                 break;
             case '=':
@@ -113,19 +122,19 @@ int _tmain(int argc, _TCHAR* argv[])
             break;
         case 10:
             if (k == 0 || k == ' ' || k == '\t')
-                APP_ERROR(IDS_WRONG_OPTION_ARG);
+                APP_ERROR(IDS_WRONG_COLOR_FORMAT);
 
             buffer[0] = k;
             state = 11;
             break;
         case 11:
             if (k == 0 || k == ' ' || k == '\t')
-                APP_ERROR(IDS_WRONG_OPTION_ARG);
+                APP_ERROR(IDS_WRONG_COLOR_FORMAT);
 
             buffer[1] = k;
             buffer[2] = 0;
             if ((tmp = MergeAttributes(buffer, oldAttrs)) == ATTRIBUTE_ERROR)
-                APP_ERROR(IDS_WRONG_INDEX_FORMAT);
+                APP_ERROR(IDS_WRONG_COLOR_FORMAT);
 
             if (isConsole && !SetAttributes(oldAttrs = tmp))
                 SYS_ERROR();
@@ -169,31 +178,55 @@ int _tmain(int argc, _TCHAR* argv[])
             state = 0;
             break;
         case 30:
-            if (k == '[') {
+            if (k == rawBeginChar) {
                 state = 31;
             } else {
-                APP_ERROR(IDS_WRONG_OPTION_ARG);
+                APP_ERROR(IDS_WRONG_RAW_CHAR);
             }
             break;
         case 31:
-            if (k == ']') {
+            if (k == rawEndChar) {
                 state = 32;
             } else {
                 _puttchar(k);
             }
             break;
         case 32:
-            if (k == ']') {
+            if (k == rawEndChar) {
                 state = 0;
             } else {
-                _puttchar(']');
+                _puttchar(rawEndChar);
                 _puttchar(k);
                 state = 31;
             }
             break;
         case 40:
-            escChar = k;
-            state = 0;
+            switch (k)
+            {
+            case '^':
+            case '|':
+            case '<':
+            case '>':
+            case '#':
+            case '=':
+            case '%':
+            case '[':
+            case '{':
+            case '(':
+            case 'c':
+            case 'C':
+            case 'b':
+            case 'g':
+            case 'n':
+            case 'r':
+            case 't':
+                APP_ERROR(IDS_ILLEGAL_ESC_CHAR);
+                break;
+            default:
+                escChar = k;
+                state = 0;
+                break;
+            }
             break;
         }
     }
