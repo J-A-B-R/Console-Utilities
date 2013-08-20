@@ -16,6 +16,10 @@
 #define SYS_ERROR() { if (isConsole) { SetAttributes(originalAttrs); ExitSysError(); } }
 
 #define DEFAULT_ESCAPE_CHARACTER '$'
+#define CURSOR_POS_STACK_SIZE 32
+
+COORD gCursorPosStack[CURSOR_POS_STACK_SIZE];
+UINT gCursorPosStackPointer;
 
 int _tmain(int argc, _TCHAR* argv[])
 {
@@ -54,6 +58,8 @@ int _tmain(int argc, _TCHAR* argv[])
     for (i = 0, state = 0, k = *arg; k != 0; k = *(arg + ++i)) {
         switch (state)
         {
+        ///////////////////////////////////////////////////////////////////////
+        ///// Normal printing and escape character detection
         case 0:
             if (k == escChar) {
                 state = 1;
@@ -61,6 +67,8 @@ int _tmain(int argc, _TCHAR* argv[])
                 _puttchar(k);
             }
             break;
+        ///////////////////////////////////////////////////////////////////////
+        ///// Escaped character selection
         case 1:
             switch (k) {
             case 'c':
@@ -120,6 +128,8 @@ int _tmain(int argc, _TCHAR* argv[])
                 break;
             }
             break;
+        ///////////////////////////////////////////////////////////////////////
+        ///// Color
         case 10:
             if (k == 0 || k == ' ' || k == '\t')
                 APP_ERROR(IDS_WRONG_COLOR_FORMAT);
@@ -141,7 +151,34 @@ int _tmain(int argc, _TCHAR* argv[])
 
             state = 0;
             break;
+        ///////////////////////////////////////////////////////////////////////
+        ///// Cursor position
         case 20:
+            ///////////////////////////////////////////////////////////////////
+            ///// Cursor position saving and retrieving
+            if (k == 's') {
+                CONSOLE_SCREEN_BUFFER_INFO info;
+
+                if (gCursorPosStackPointer == CURSOR_POS_STACK_SIZE)
+                    APP_ERROR(IDS_TOO_MANY_CURSOR_POS_SAVED);
+                if (!GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &info))
+                    SYS_ERROR();
+                gCursorPosStack[gCursorPosStackPointer++] = info.dwCursorPosition;
+                state = 0;
+                break;
+            }
+
+            if (k == 'r') {
+                if (gCursorPosStackPointer == 0)
+                    APP_ERROR(IDS_NO_CURSOR_POS_SAVED);
+                if (!SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), gCursorPosStack[--gCursorPosStackPointer]))
+                    SYS_ERROR();
+                state = 0;
+                break;
+            }
+
+            ///////////////////////////////////////////////////////////////////
+            ///// Cursor positioning
             if (k == ';')
                 APP_ERROR(IDS_WRONG_COORD_FORMAT);
 
@@ -177,6 +214,8 @@ int _tmain(int argc, _TCHAR* argv[])
             }
             state = 0;
             break;
+        ///////////////////////////////////////////////////////////////////////
+        ///// Raw text
         case 30:
             if (k == rawBeginChar) {
                 state = 31;
@@ -200,6 +239,8 @@ int _tmain(int argc, _TCHAR* argv[])
                 state = 31;
             }
             break;
+        ///////////////////////////////////////////////////////////////////////
+        ///// Escape character
         case 40:
             switch (k)
             {
