@@ -34,6 +34,12 @@ Commands on roadmap
 
 - **`NSCRB`**: Launchs a program in a new screen buffer on the same console and reverts to the previous screen buffer on exiting.
 
+- **`MSGBOX`**: Displays a Windows dialog box with custom message, buttons and icon and returning the button pressed.
+
+- **`ISELEV`**: Checks if the script is running with elevated privileges.
+
+- **`PSET`**: Sets a environment variable through a pipe. Something like `VER|PSET Version` that sets the variable `Version` with the result of the command `VER`.
+
 
 Personal background
 -------------------
