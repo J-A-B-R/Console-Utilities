@@ -1,7 +1,7 @@
 #define VER_MAJOR_NUMBER 1
-#define VER_MINOR_NUMBER 0
+#define VER_MINOR_NUMBER 2
 #define VER_DELTA_NUMBER 1
-#define VER_BUILD_NUMBER 14
+#define VER_BUILD_NUMBER 19
 
 #define STR(value) #value
 #define STRINGIZE(value) STR(value)

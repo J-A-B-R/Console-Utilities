@@ -12,19 +12,19 @@ You can download or clone the project and compile it for yourself or you can dow
 put the executables in a directory included in the `PATH` environment variable.
 
 ###Bundles:
-* [Console Utilities v1.1.0 32 bits](https://rapidshare.com/files/250298392/Console-Utilities_x86_1.1.0.zip)
+* [Console Utilities v1.1.0 32 bits](https://rapidshare.com/files/1078133669/Console-Utilities_x86_1.2.0.zip)
 
-* [Console Utilities v1.1.0 64 bits](https://rapidshare.com/files/1716544473/Console-Utilities_x64_1.1.0.zip)
+* [Console Utilities v1.1.0 64 bits](https://rapidshare.com/files/1968047593/Console-Utilities_x64_1.2.0.zip)
 
 
 Commands included so far
 ------------------------
 
-- [**`CCOLOR`**](https://github.com/J-A-B-R/Console-Utilities/blob/master/Color%20Attributes/EnglishHelp.txt): Gets or sets the current foreground and background console colors.
+- [**`CCOLOR`**](https://github.com/J-A-B-R/Console-Utilities/blob/master/Color%20Attributes/EnglishHelp.txt): Gets or sets the current foreground and/or background console colors for the next commands, but leaving unchanged what it's already present on the console.
 
-- [**`EECHO`**](https://github.com/J-A-B-R/Console-Utilities/blob/master/Enhanced%20Echo/EnglishHelp.txt): Displays a message enhanced with escaped characters with several functions.
+- [**`EECHO`**](https://github.com/J-A-B-R/Console-Utilities/blob/master/Enhanced%20Echo/EnglishHelp.txt): Displays a message enhanced with escaped characters with several functions like cursor positioning, local colouring and special control characters among other enhancements.
 
-- [**`ELEV`**](https://github.com/J-A-B-R/Console-Utilities/blob/master/Elevate/EnglishHelp.txt): If the UAC is enabled, launchs a program elevated, but using the existing console, instead of spawning a new one.  
+- [**`ELEV`**](https://github.com/J-A-B-R/Console-Utilities/blob/master/Elevate/EnglishHelp.txt): If the UAC is enabled, launchs a program elevated, but using the existing console, instead of spawning a new one. Similar to the workings of unix command `sudo`.  
 (Inpired by [The Code Project](http://www.codeproject.com/) article [Vista UAC: The Definitive Guide](http://www.codeproject.com/Articles/19165/Vista-UAC-The-Definitive-Guide)).
 
 
@@ -33,8 +33,6 @@ Commands on roadmap
 - **`COLORTABLE`**: Changes the console color palette with new colors.
 
 - **`NSCRB`**: Launchs a program in a new screen buffer on the same console and reverts to the previous screen buffer on exiting.
-
-- New escaped characters and improvements to **`EECHO`**.
 
 
 Personal background
@@ -46,6 +44,9 @@ So here I am, back to basics facing the arid Win32 API that I've almost forgotte
 
 History
 -------
+### 1.2
+- Added new escaped characters, expanded cursor positioning and made some corrections to **`EECHO`**.
+
 ### 1.1
 - Published command **`ELEV`**.
 - Corrected some help erratas.

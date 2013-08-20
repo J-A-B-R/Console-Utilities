@@ -32,11 +32,18 @@ BOOL IsElevated();
 #define CONSOLE_FILE_NAME_MAX_LENGTH 7
 #define ATTRIBUTE_ERROR 0xffff
 
+typedef enum {
+    Absolute,
+    PositionRelative,
+    LeftTopRelative,
+    RightBottomRelative
+} cursorCoordType_t;
+
 BOOL IsConsoleHandle(HANDLE hHandle);
 
 WORD MergeAttributes(TCHAR* lpszNewAttrs, WORD nCurrentAttrs);
 
-BOOL SetCursorPosition(SHORT x, SHORT y, BOOL xRel, BOOL yRel);
+BOOL SetCursorPosition(SHORT x, SHORT y, cursorCoordType_t xRel, cursorCoordType_t yRel);
 
 WORD GetAttributes();
 

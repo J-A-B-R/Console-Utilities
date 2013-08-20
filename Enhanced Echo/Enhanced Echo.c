@@ -18,27 +18,22 @@
 #define DEFAULT_ESCAPE_CHARACTER '$'
 #define CURSOR_POS_STACK_SIZE 32
 
-COORD gCursorPosStack[CURSOR_POS_STACK_SIZE];
-UINT gCursorPosStackPointer;
-
 int _tmain(int argc, _TCHAR* argv[])
 {
     TCHAR escChar = DEFAULT_ESCAPE_CHARACTER;
     TCHAR rawBeginChar, rawEndChar;
-    int i;
-    int state;
-    WORD originalAttrs;
-    WORD oldAttrs;
+    UINT i, state;
+    WORD originalAttrs, oldAttrs;
     WORD tmp;
     TCHAR* arg;
     TCHAR k;
     TCHAR buffer[5];
     TCHAR* ptr;
-    BOOL xRel;
-    BOOL yRel;
-    __int64 x;
-    __int64 y;
+    cursorCoordType_t xRel, yRel;
+    __int64 x, y;
     BOOL isConsole = TRUE;
+    COORD cursorPosStack[CURSOR_POS_STACK_SIZE];
+    UINT cursorPosStackPointer = 0;
 
     if (argc == 1) {
         _tprintf(_T("\n"));
@@ -159,19 +154,19 @@ int _tmain(int argc, _TCHAR* argv[])
             if (k == 's') {
                 CONSOLE_SCREEN_BUFFER_INFO info;
 
-                if (gCursorPosStackPointer == CURSOR_POS_STACK_SIZE)
+                if (cursorPosStackPointer == CURSOR_POS_STACK_SIZE)
                     APP_ERROR(IDS_TOO_MANY_CURSOR_POS_SAVED);
                 if (!GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &info))
                     SYS_ERROR();
-                gCursorPosStack[gCursorPosStackPointer++] = info.dwCursorPosition;
+                cursorPosStack[cursorPosStackPointer++] = info.dwCursorPosition;
                 state = 0;
                 break;
             }
 
-            if (k == 'r') {
-                if (gCursorPosStackPointer == 0)
+            if (k == 'p') {
+                if (cursorPosStackPointer == 0)
                     APP_ERROR(IDS_NO_CURSOR_POS_SAVED);
-                if (!SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), gCursorPosStack[--gCursorPosStackPointer]))
+                if (!SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), cursorPosStack[--cursorPosStackPointer]))
                     SYS_ERROR();
                 state = 0;
                 break;
@@ -182,36 +177,65 @@ int _tmain(int argc, _TCHAR* argv[])
             if (k == ';')
                 APP_ERROR(IDS_WRONG_COORD_FORMAT);
 
-            xRel = k == '+' || k == '-';
+            if (k == 'l') {
+                xRel = LeftTopRelative;
+                state = 21;
+                break;
+            } else if (k == 'r') {
+                xRel = RightBottomRelative;
+                state = 21;
+                break;
+            } else
+                xRel = Absolute;
+            // Fall through to state 21 with the current character
+        case 21:
+            if (xRel == Absolute && (k == '+' || k == '-'))
+                xRel = PositionRelative;
+
             x = _tcstoi64(arg + i, &ptr, 10);
             if (errno != 0 || x > SHRT_MAX || x < SHRT_MIN)
                 APP_ERROR(IDS_WRONG_COORD_FORMAT);
 
             i = (int)(ptr - arg);
             if (*ptr == ';') {
-                if (isConsole && !SetCursorPosition((SHORT)x, 0, xRel, TRUE))
+                if (isConsole && !SetCursorPosition((SHORT)x, 0, xRel, PositionRelative))
                     SYS_ERROR();
-
                 state = 0;
-            } else if (*ptr == ',')
-                state = 21;
-            else
+            } else if (*ptr == ',') {
+                state = 22;
+            } else
                 APP_ERROR(IDS_WRONG_COORD_FORMAT);
             break;
-        case 21:
+        case 22:
             if (k == ';') {
-                if (isConsole && !SetCursorPosition((SHORT)x, 0, xRel, TRUE))
+                if (isConsole && !SetCursorPosition((SHORT)x, 0, xRel, PositionRelative))
                     SYS_ERROR();
-            } else {
-                yRel = k == '+' || k == '-';
-                y = _tcstoi64(arg + i, &ptr, 10);
-                if (errno != 0 || x > SHRT_MAX || x < SHRT_MIN || *ptr != ';')
-                    APP_ERROR(IDS_WRONG_COORD_FORMAT);
-
-                i = (int)(ptr - arg);
-                if (isConsole && !SetCursorPosition((SHORT)x, (SHORT)y, xRel, yRel))
-                    SYS_ERROR();
+                state = 0;
+                break;
             }
+
+            if (k == 't') {
+                yRel = LeftTopRelative;
+                state = 23;
+                break;
+            } else if (k == 'b') {
+                yRel = RightBottomRelative;
+                state = 23;
+                break;
+            } else
+                yRel = Absolute;
+            // Fall through to state 23 with the current character
+        case 23:
+            if (yRel == Absolute && (k == '+' || k == '-'))
+                yRel = PositionRelative;
+
+            y = _tcstoi64(arg + i, &ptr, 10);
+            if (errno != 0 || x > SHRT_MAX || x < SHRT_MIN || *ptr != ';')
+                APP_ERROR(IDS_WRONG_COORD_FORMAT);
+
+            i = (int)(ptr - arg);
+            if (isConsole && !SetCursorPosition((SHORT)x, (SHORT)y, xRel, yRel))
+                SYS_ERROR();
             state = 0;
             break;
         ///////////////////////////////////////////////////////////////////////
@@ -248,6 +272,7 @@ int _tmain(int argc, _TCHAR* argv[])
             case '|':
             case '<':
             case '>':
+            case '&':
             case '#':
             case '=':
             case '%':

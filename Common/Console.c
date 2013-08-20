@@ -51,28 +51,37 @@ SHORT SafeAddShorts(SHORT a, SHORT b)
     return (tmp < SHRT_MIN) ? SHRT_MIN : (tmp > SHRT_MAX) ? SHRT_MAX : (SHORT)tmp;
 }
 
-BOOL SetCursorPosition(SHORT x, SHORT y, BOOL xRel, BOOL yRel)
+BOOL SetCursorPosition(SHORT x, SHORT y, cursorCoordType_t xRel, cursorCoordType_t yRel)
 {
     HANDLE handle;
-    CONSOLE_SCREEN_BUFFER_INFO info;
+    CONSOLE_SCREEN_BUFFER_INFOEX info;
     COORD coord;
 
     handle = GetStdHandle(STD_OUTPUT_HANDLE);
 
     if (handle == INVALID_HANDLE_VALUE)
         return FALSE;
-    
-    if (xRel || yRel) {
-        if (!GetConsoleScreenBufferInfo(handle, &info))
-            return FALSE;
-        if (xRel)
-            x = SafeAddShorts(info.dwCursorPosition.X, x);
-        if (yRel)
-            y = SafeAddShorts(info.dwCursorPosition.Y, y);
-    }
 
-    coord.X = (x >= 0) ? x : 0;
-    coord.Y = (y >= 0) ? y : 0;
+    info.cbSize = sizeof(CONSOLE_SCREEN_BUFFER_INFOEX);
+    if (!GetConsoleScreenBufferInfoEx(handle, &info))
+        return FALSE;
+
+    if (xRel == PositionRelative)
+        x = SafeAddShorts(info.dwCursorPosition.X, x);
+    else if (xRel == LeftTopRelative)
+        x = SafeAddShorts(info.srWindow.Left, x);
+    else if (xRel == RightBottomRelative)
+        x = SafeAddShorts(info.srWindow.Right, x);
+
+    if (yRel == PositionRelative)
+        y = SafeAddShorts(info.dwCursorPosition.Y, y);
+    else if (yRel == LeftTopRelative)
+        y = SafeAddShorts(info.srWindow.Top, y);
+    else if (yRel == RightBottomRelative)
+        y = SafeAddShorts(info.srWindow.Bottom, y);
+
+    coord.X = (x < 0) ? 0 : (x > info.dwSize.X) ? info.dwSize.X : x;
+    coord.Y = (y < 0) ? 0 : (y > info.dwSize.Y) ? info.dwSize.Y : y;
 
     return SetConsoleCursorPosition(handle, coord);
 }
