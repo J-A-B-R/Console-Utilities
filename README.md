@@ -12,9 +12,9 @@ You can download or clone the project and compile it for yourself or you can dow
 put the executables in a directory included in the `PATH` environment variable.
 
 ###Bundles:
-* [Console Utilities v1.2.0 32 bits](https://rapidshare.com/files/1078133669/Console-Utilities_x86_1.2.0.zip)
+* [Console Utilities v1.2.0 32 bits](https://github.com/J-A-B-R/Console-Utilities/releases/download/Release_1.2/Console-Utilities_x86_1.2.0.zip)
 
-* [Console Utilities v1.2.0 64 bits](https://rapidshare.com/files/1968047593/Console-Utilities_x64_1.2.0.zip)
+* [Console Utilities v1.2.0 64 bits](https://github.com/J-A-B-R/Console-Utilities/releases/download/Release_1.2/Console-Utilities_x64_1.2.0.zip)
 
 
 Commands included so far
